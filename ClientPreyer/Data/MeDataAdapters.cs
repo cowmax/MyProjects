@@ -12,10 +12,10 @@ using System.Text.RegularExpressions;
 using System.Web;
 using System.Xml.Linq;
 
-namespace TrafficMgr
+namespace MeDataAdapters
 {
     // 类：用于配置与 Trafficdb 数据库的公共参数
-    public abstract class MeSqlDataAdpter : MySqlAdapter
+    public abstract class MeSqlDataAdapter : MySqlAdapter
     {
         // initialize MySql database (connection string) parameters
         protected override void initMySqlSettings()
@@ -143,6 +143,57 @@ namespace TrafficMgr
 
             return s;
         }
+    }
+
+    public class ClientBaseInfoAdapter : MeSqlDataAdapter
+    {
+        protected override void initTableName()
+        {
+            _tableName = "ClientBaseInfo";
+        }
+
+        public DataTable getClientInfo(string sql)
+        {
+            this.dataTable.Clear();
+
+            MySqlCommand sqlCmd = new MySqlCommand(sql, this.sqlConn);
+            MySqlDataAdapter adpter = new MySqlDataAdapter(sqlCmd);
+
+            adpter.Fill(this.dataTable);
+            return this.dataTable;
+        }
+
+    }
+
+    public class SysUserAdapter : MeSqlDataAdapter
+    {
+        protected override void initTableName()
+        {
+            _tableName = "SysUser";
+        }
+
+        public DataTable getSysUser(string userName, string password)
+        {
+            this.dataTable.Clear();
+            string sql = string.Format("SELECT * FROM SysUser WHERE UserName='{0}' AND PASSWORD='{1}' LIMIT 1", userName, password);
+            MySqlDataAdapter adpater = new MySqlDataAdapter(sql, this.sqlConn);
+            adpater.Fill(this.dataTable);
+
+            return this.dataTable;
+        }
+
+        public DataTable getSysUser(int id)
+        {
+            _dtTable.Clear();
+            string sql = string.Format("SELECT * FROM SysUser WHERE UserId={0} LIMIT 1", id);
+            MySqlDataAdapter adpater = new MySqlDataAdapter(sql, this.sqlConn);
+            adpater.Fill(this.dataTable);
+
+            return this.dataTable;
+
+        }
+
+
     }
     // 类：用于保存 MySQL 数据库连接参数的
     public class DBParam

@@ -710,16 +710,12 @@ namespace MySqlAdapters
                 {
                     m_connString = connStringBuilder(db_host, db_port, db_name, db_user, db_pass, db_charset);
                     m_sqlConn = new MySqlConnection(m_connString);
-
-                    m_sqlConn.Open();
-                    //m_openedCount++;
-
-                    LogHelper.info(string.Format("Open MySQL DB ({0}) connection successfully.", DateTime.Now));
                 }
-                else if (m_sqlConn.State != ConnectionState.Open)// Re-Open the DB connection when it is not OPEN
+
+                if (m_sqlConn.State != ConnectionState.Open)// Open the DB connection when it is not OPEN
                 {
                     m_sqlConn.Open();
-                    //m_openedCount++;
+                    m_openedCount++;
 
                     LogHelper.info(string.Format("Open MySQL DB ({0}) connection successfully.[ConnectionState.Open]", m_openedCount));
                 }
@@ -728,6 +724,7 @@ namespace MySqlAdapters
             {
                 result = false;
 
+                m_sqlConn.Close();
                 m_sqlConn = null;
 
                 LogHelper.error("initDb : " + e.Message);

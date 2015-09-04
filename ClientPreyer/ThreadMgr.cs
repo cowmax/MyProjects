@@ -41,5 +41,15 @@ namespace ClientPreyer
             return bSucc;
 
         }
+
+        internal int loadTask()
+        {
+            throw new NotImplementedException();
+        }
+
+        internal void processTask(Action taskCompletedCallback)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

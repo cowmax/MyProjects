@@ -55,7 +55,7 @@
     <Compile Include="ClientIdPreyerThread.cs" />
     <Compile Include="ClientInfoPreyerThread.cs" />
     <Compile Include="Data\MySqlAdapter.cs" />
-    <Compile Include="Data\MeDataAdapter.cs" />
+    <Compile Include="Data\MeDataAdapters.cs" />
     <Compile Include="LogHelper\LogHelper.cs" />
     <Compile Include="LoginThread.cs" />
     <Compile Include="MainForm.cs">

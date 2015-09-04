@@ -33,6 +33,12 @@
             this.label2 = new System.Windows.Forms.Label();
             this.btnStart = new System.Windows.Forms.Button();
             this.rtxLog = new System.Windows.Forms.RichTextBox();
+            this.label3 = new System.Windows.Forms.Label();
+            this.txbUserName = new System.Windows.Forms.TextBox();
+            this.txbPassword = new System.Windows.Forms.TextBox();
+            this.label4 = new System.Windows.Forms.Label();
+            this.btnLogin = new System.Windows.Forms.Button();
+            this.lblLoginStatus = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDown1)).BeginInit();
             this.SuspendLayout();
             // 
@@ -79,11 +85,69 @@
             this.rtxLog.TabIndex = 4;
             this.rtxLog.Text = "";
             // 
+            // label3
+            // 
+            this.label3.AutoSize = true;
+            this.label3.Location = new System.Drawing.Point(10, 241);
+            this.label3.Name = "label3";
+            this.label3.Size = new System.Drawing.Size(59, 12);
+            this.label3.TabIndex = 5;
+            this.label3.Text = "User Name";
+            // 
+            // txbUserName
+            // 
+            this.txbUserName.Location = new System.Drawing.Point(87, 237);
+            this.txbUserName.Name = "txbUserName";
+            this.txbUserName.Size = new System.Drawing.Size(100, 21);
+            this.txbUserName.TabIndex = 6;
+            // 
+            // txbPassword
+            // 
+            this.txbPassword.Location = new System.Drawing.Point(87, 268);
+            this.txbPassword.Name = "txbPassword";
+            this.txbPassword.PasswordChar = '*';
+            this.txbPassword.Size = new System.Drawing.Size(100, 21);
+            this.txbPassword.TabIndex = 8;
+            // 
+            // label4
+            // 
+            this.label4.AutoSize = true;
+            this.label4.Location = new System.Drawing.Point(16, 272);
+            this.label4.Name = "label4";
+            this.label4.Size = new System.Drawing.Size(53, 12);
+            this.label4.TabIndex = 7;
+            this.label4.Text = "Password";
+            // 
+            // btnLogin
+            // 
+            this.btnLogin.Location = new System.Drawing.Point(198, 235);
+            this.btnLogin.Name = "btnLogin";
+            this.btnLogin.Size = new System.Drawing.Size(75, 23);
+            this.btnLogin.TabIndex = 9;
+            this.btnLogin.Text = "Login";
+            this.btnLogin.UseVisualStyleBackColor = true;
+            this.btnLogin.Click += new System.EventHandler(this.btnLogin_Click);
+            // 
+            // lblLoginStatus
+            // 
+            this.lblLoginStatus.AutoSize = true;
+            this.lblLoginStatus.Location = new System.Drawing.Point(206, 277);
+            this.lblLoginStatus.Name = "lblLoginStatus";
+            this.lblLoginStatus.Size = new System.Drawing.Size(59, 12);
+            this.lblLoginStatus.TabIndex = 10;
+            this.lblLoginStatus.Text = "登录状态.";
+            // 
             // mainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(371, 219);
+            this.ClientSize = new System.Drawing.Size(371, 307);
+            this.Controls.Add(this.lblLoginStatus);
+            this.Controls.Add(this.btnLogin);
+            this.Controls.Add(this.txbPassword);
+            this.Controls.Add(this.label4);
+            this.Controls.Add(this.txbUserName);
+            this.Controls.Add(this.label3);
             this.Controls.Add(this.rtxLog);
             this.Controls.Add(this.btnStart);
             this.Controls.Add(this.label2);
@@ -108,6 +172,12 @@
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.Button btnStart;
         private System.Windows.Forms.RichTextBox rtxLog;
+        private System.Windows.Forms.Label label3;
+        private System.Windows.Forms.TextBox txbUserName;
+        private System.Windows.Forms.TextBox txbPassword;
+        private System.Windows.Forms.Label label4;
+        private System.Windows.Forms.Button btnLogin;
+        private System.Windows.Forms.Label lblLoginStatus;
     }
 }
 

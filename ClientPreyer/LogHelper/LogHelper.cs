@@ -8,6 +8,7 @@ namespace Logging
 {
     public class LogHelper
     {
+        // 使用 LogHeler 的程序必须先初始化 log4net 的配置
         public static void init()
         {
             log4net.Config.XmlConfigurator.Configure();
