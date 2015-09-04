@@ -1,0 +1,28 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<dbsetting>
+  <active_setting>1</active_setting>
+  <db>
+    <db_host>127.0.0.1</db_host>
+    <db_port>3306</db_port>
+    <db_name>client</db_name>
+    <db_user>dev</db_user>
+    <db_pass>123654</db_pass>
+    <db_charset>utf8</db_charset>
+  </db>
+  <db>
+    <db_host>qdm15797797.my3w.com</db_host>
+    <db_port>3306</db_port>
+    <db_name>qdm15797797_db</db_name>
+    <db_user>qdm15797797</db_user>
+    <db_pass>Internet360</db_pass>
+    <db_charset>utf8</db_charset>
+  </db>
+  <db>
+    <db_host>112.74.86.66</db_host>
+    <db_port>3307</db_port>
+    <db_name>trafficdb</db_name>
+    <db_user>yucheng</db_user>
+    <db_pass>bob@YC897</db_pass>
+    <db_charset>utf8</db_charset>
+  </db>
+</dbsetting>
