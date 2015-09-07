@@ -26,12 +26,37 @@ namespace ClientPreyer.Properties {
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("http://www.p1.cn/siteadmin/photographer/photographers.php")]
-        public string targetUrl {
+        public string phtgpherUrl {
             get {
-                return ((string)(this["targetUrl"]));
+                return ((string)(this["phtgpherUrl"]));
             }
             set {
-                this["targetUrl"] = value;
+                this["phtgpherUrl"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("http://www.p1.cn/reg/login.php")]
+        public string loginUrl {
+            get {
+                return ((string)(this["loginUrl"]));
+            }
+            set {
+                this["loginUrl"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("http://www.p1.cn/siteadmin/photographer/upload.php?act=edit&photographer_id={0}&p" +
+            "u_id={1}\r\n")]
+        public string clientDetailUrl {
+            get {
+                return ((string)(this["clientDetailUrl"]));
+            }
+            set {
+                this["clientDetailUrl"] = value;
             }
         }
     }

@@ -29,11 +29,17 @@ namespace ClientPreyer
         ThreadMgr mgr = new ThreadMgr();
         private void btnStart_Click(object sender, EventArgs e)
         {
-            string userName = "";
-            string password = "";
-
-            if (mgr.Login(userName, password))
+            if (mgr.isLogin)
             {
+                // Parse all photographer's info
+                // int nPhtgpher = mgr.preyPhotograpthers(2);
+
+                // Parse all client's basic info
+                int nBase = mgr.preyAllClientBaseInfo();
+
+                // Parse all client's detail info
+                int nDetail = mgr.preyAllClientDetailInfo();
+
                 int nTask = mgr.loadTask();
                 if (nTask == 0)
                 {

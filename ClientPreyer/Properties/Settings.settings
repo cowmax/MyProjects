@@ -2,8 +2,15 @@
 <SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="ClientPreyer.Properties" GeneratedClassName="Settings">
   <Profiles />
   <Settings>
-    <Setting Name="targetUrl" Type="System.String" Scope="User">
+    <Setting Name="phtgpherUrl" Type="System.String" Scope="User">
       <Value Profile="(Default)">http://www.p1.cn/siteadmin/photographer/photographers.php</Value>
+    </Setting>
+    <Setting Name="loginUrl" Type="System.String" Scope="User">
+      <Value Profile="(Default)">http://www.p1.cn/reg/login.php</Value>
+    </Setting>
+    <Setting Name="clientDetailUrl" Type="System.String" Scope="User">
+      <Value Profile="(Default)">http://www.p1.cn/siteadmin/photographer/upload.php?act=edit&amp;photographer_id={0}&amp;pu_id={1}
+</Value>
     </Setting>
   </Settings>
 </SettingsFile>

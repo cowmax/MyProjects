@@ -145,6 +145,53 @@ namespace MeDataAdapters
         }
     }
 
+    public class PhotographerAdapter : MeSqlDataAdapter
+    {
+        public int insert(string ptgphrName, string ptgphrId, string gender)
+        {
+            MySqlCommand insertCmd = new MySqlCommand();
+            insertCmd.Connection = this.sqlConn;
+            insertCmd.CommandText = "INSERT IGNORE INTO photographer(PhtgphrName, PhtgphrId, Gender) VALUE(@PhtgphrName, @PhtgphrId, @Gender)";
+            insertCmd.Parameters.AddWithValue("@PhtgphrName", ptgphrName);
+            insertCmd.Parameters.AddWithValue("@PhtgphrId", ptgphrId);
+            insertCmd.Parameters.AddWithValue("@gender", gender);
+
+            return insertCmd.ExecuteNonQuery();
+        }
+
+        protected override void initTableName()
+        {
+            _tableName = "photographer";
+        }
+
+        internal DataTable getAllPhotographers(bool notPrey)
+        {
+            int preyState = notPrey ? 0 : 1;
+            string sql = string.Format("SELECT * FROM {0} WHERE preyState={1}", _tableName, preyState);
+            MySqlCommand sqlCmd = new MySqlCommand(sql, this.sqlConn);
+
+            DataTable dt = new DataTable();
+            MySqlDataAdapter adapter = new MySqlDataAdapter(sqlCmd);
+            adapter.Fill(dt);
+
+            return dt;
+        }
+
+        internal int setState(int pid, int  pageNum, int clientCount, bool bCompleted)
+        {
+            MySqlCommand sqlCmd = new MySqlCommand();
+            sqlCmd.Connection = this.sqlConn;
+            sqlCmd.CommandText = string.Format("UPDATE {0} SET PageNum=@pageNum, ClientCount=@clientCount, PreyState=@preyState WHERE PhtgphrId=@pid", _tableName);
+            int preyState = bCompleted ? 1 : 0;
+            sqlCmd.Parameters.AddWithValue("@pid", pid);
+            sqlCmd.Parameters.AddWithValue("@pageNum", pageNum);
+            sqlCmd.Parameters.AddWithValue("@clientCount", clientCount);
+            sqlCmd.Parameters.AddWithValue("@preyState", preyState);
+
+            return sqlCmd.ExecuteNonQuery();
+        }
+    }
+
     public class ClientBaseInfoAdapter : MeSqlDataAdapter
     {
         protected override void initTableName()
@@ -163,6 +210,74 @@ namespace MeDataAdapters
             return this.dataTable;
         }
 
+        internal DataTable getPendingClients()
+        {
+            this.dataTable.Clear();
+            string sql = string.Format("SELECT * FROM ClientBaseInfo WHERE PreyState=0");
+            MySqlCommand sqlCmd = new MySqlCommand(sql, this.sqlConn);
+            MySqlDataAdapter adpter = new MySqlDataAdapter(sqlCmd);
+
+            adpter.Fill(this.dataTable);
+            return this.dataTable;
+        }
+
+        internal int insert(int userId, string userName, string realName, string city, string location,
+            DateTime takeTime, DateTime activateTime, int photoPoint, string status, int ptgphrId)
+        {
+            MySqlCommand insertCmd = new MySqlCommand();
+            insertCmd.Connection = this.sqlConn;
+            insertCmd.CommandText = "INSERT IGNORE INTO ClientBaseInfo(UserId, UserName, RealName, City, "
+                +"Location, TakeTime, ActivateTime, PhotoPoint, Status, PhotographerId) "
+                + "VALUE(@UserId,@UserName,@RealName,@City,@Location,@TakeTime,@ActivateTime,@PhotoPoint,@Status,@PhotographerId)";
+            insertCmd.Parameters.AddWithValue("@UserId", userId);
+            insertCmd.Parameters.AddWithValue("@UserName", userName);
+            insertCmd.Parameters.AddWithValue("@RealName", realName);
+            insertCmd.Parameters.AddWithValue("@City", city);
+            insertCmd.Parameters.AddWithValue("@Location", location);
+            insertCmd.Parameters.AddWithValue("@TakeTime", takeTime);
+            insertCmd.Parameters.AddWithValue("@ActivateTime", activateTime);
+            insertCmd.Parameters.AddWithValue("@PhotoPoint", photoPoint);
+            insertCmd.Parameters.AddWithValue("@Status", status);
+            insertCmd.Parameters.AddWithValue("@PhotographerId", ptgphrId);
+
+            return insertCmd.ExecuteNonQuery();
+        }
+
+        internal DataTable getAllClientBaseInfo(bool notPrey)
+        {
+            int preyState = notPrey ? 0 : 1;
+            string sql = string.Format("SELECT * FROM {0} WHERE preyState={1}", _tableName, preyState);
+            MySqlCommand sqlCmd = new MySqlCommand(sql, this.sqlConn);
+
+            DataTable dt = new DataTable();
+            MySqlDataAdapter adapter = new MySqlDataAdapter(sqlCmd);
+            adapter.Fill(dt);
+
+            return dt;
+        }
+    }
+
+    public class ClientDetailInfoAdapter : MeSqlDataAdapter
+    {
+        protected override void initTableName()
+        {
+            _tableName = "clientdetailinfo";
+        }
+
+        internal int insert(int pid, int uid, string email, string mobile)
+        {
+            MySqlCommand insertCmd = new MySqlCommand();
+            insertCmd.Connection = this.sqlConn;
+            insertCmd.CommandText = string.Format("INSERT INTO {0}(PhotographerId, UserId, Email, Mobile)\n"
+                                  + "VALUE(@PhotographerId, @UserId, @Email, @Mobile)\n"
+                                  + "ON DUPLICATE KEY UPDATE {0}.Email=@Email, {0}.Mobile=@Mobile", _tableName);
+            insertCmd.Parameters.AddWithValue("@UserId", uid);
+            insertCmd.Parameters.AddWithValue("@PhotographerId", pid);
+            insertCmd.Parameters.AddWithValue("@Email", email);
+            insertCmd.Parameters.AddWithValue("@Mobile", mobile);
+
+            return insertCmd.ExecuteNonQuery();
+        }
     }
 
     public class SysUserAdapter : MeSqlDataAdapter
@@ -192,9 +307,8 @@ namespace MeDataAdapters
             return this.dataTable;
 
         }
-
-
     }
+
     // 类：用于保存 MySQL 数据库连接参数的
     public class DBParam
     {
