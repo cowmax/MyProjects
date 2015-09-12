@@ -56,6 +56,34 @@ namespace ClientPreyer
             return _wc;
         }
 
+        public static MyWebClient createWebClient(string cookie=null)
+        {
+            MyWebClient wbclnt = new MyWebClient();
+
+            // Header 字段可以在发出请求报文后丢失，因此必须重新设置
+            wbclnt.Headers.Add(HttpRequestHeader.ContentType, "application/x-www-form-urlencoded");
+            wbclnt.Headers.Add(HttpRequestHeader.Accept, "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8");
+            wbclnt.Headers.Add(HttpRequestHeader.AcceptEncoding, "gzip, deflate");
+            wbclnt.Headers.Add(HttpRequestHeader.AcceptLanguage, "zh-CN,zh;q=0.8,en;q=0.6,zh-TW;q=0.4");
+            wbclnt.Headers.Add(HttpRequestHeader.Referer, "http://www.p1.cn/");
+            wbclnt.Encoding = new UTF8Encoding();
+
+            if (cookie != null)
+            {
+                wbclnt.Headers.Add(HttpRequestHeader.Cookie, cookie);
+            }
+
+            LogHelper.info("create webclient with cookie : " + cookie);
+
+            return wbclnt;
+        }
+
+        internal void preyAllClientDetailInfoAsync()
+        {
+            ClientDetailThread thread = new ClientDetailThread();
+            thread.start();
+        }
+
         internal int preyAllClientDetailInfo()
         {
             int total = 0;
@@ -76,11 +104,19 @@ namespace ClientPreyer
                 string rspData = string.Empty;
 
                 waitRandomTime();
-                rspData = wc.DownloadString(trgUrl);
-                count = parseClientDetailInfo(pid, uid, rspData);
+                try
+                {
+                    rspData = wc.DownloadString(trgUrl);
+                    count = parseClientDetailInfo(pid, uid, rspData);
+                    Debug.WriteLine("Parse photographer (id={0}) , client = {1},{2}, succ={3}", pid, userName, realName, count);
+                }
+                catch(WebException wex)
+                {
+                    Debug.WriteLine("Parse photographer (id={0}) , client = {1},{2}, ERROR={3}", pid, userName, realName, wex.Message);
+                    LogHelper.error(string.Format("Parse photographer (id={0}) , client = {1},{2}, ERROR={3}", pid, userName, realName, wex.Message));
+                }
                 total += count;
 
-                Debug.WriteLine("Parse potographer (id={0}) , client = {1},{2}, succ={3}", pid, userName, realName, count);
 
             }
             return total;
@@ -119,6 +155,7 @@ namespace ClientPreyer
                 cliCount = preyClientBaseInfo(pid, pageNum+1, 100);
                 total += cliCount;
 
+                LogHelper.info(string.Format("Parse photographer(id={0}) pageNum={1} with {2} clients.", pid, pageNum, cliCount));
                 adapter.setState(pid, pageNum, cliCount, true); // Set photographer row to 'completed'
             }
 
@@ -227,18 +264,29 @@ namespace ClientPreyer
             {
                 waitRandomTime();
                 trgUrl = string.Format(trgUrlTmpl, pid, i);
-                rspData = wc.DownloadString(trgUrl);
 
-                cliCount = parseClientBaseInfo(rspData);
-                total += cliCount;
+                try
+                {
+                    rspData = wc.DownloadString(trgUrl);
+                    cliCount = parseClientBaseInfo(rspData);
+                    total += cliCount;
 
-                adapter.setState(pid, i, cliCount, false);
+                    adapter.setState(pid, i, cliCount, false);
 
-                Debug.WriteLine("Parse potographer (id={0}) , page = {1},  records = {2} ", pid, i, cliCount);
-                if (isLastPage(rspData)) {
-                    Debug.WriteLine("Parse photographer (id={0}) {1} pages completed.", pid, i);
-                    break; // it has reached last page
+                    Debug.WriteLine("Parse potographer (id={0}) , page = {1},  records = {2} ", pid, i, cliCount);
+                    LogHelper.info(string.Format("Parse potographer (id={0}) , pageIndex = {1} with {2} clients.", pid, i, cliCount));
+
+                    if (isLastPage(rspData)) {
+                        Debug.WriteLine("Parse photographer (id={0}) {1} pages completed.", pid, i);
+                        break; // it has reached last page
+                    }
                 }
+                catch (WebException wex)
+                {
+                    Debug.WriteLine(string.Format("ERROR >> Parse potographer (id={0}) , pageIndex = {1} with Error {2}", pid, i, cliCount) + wex.Message);
+                    LogHelper.error(string.Format("Parse potographer (id={0}) , pageIndex = {1} with ERROR {2}", pid, i, wex.Message));
+                }
+
             }
 
             return total;
@@ -254,7 +302,7 @@ namespace ClientPreyer
         {
             Random rdm = new Random(DateTime.Now.Millisecond);
             int intvl = rdm.Next();
-            intvl = intvl % 10000;
+            intvl = intvl % 1000;
             
             Debug.WriteLine("Take a break {0} milliseconds", intvl);
             Thread.Sleep(intvl);

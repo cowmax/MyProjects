@@ -719,6 +719,10 @@ namespace MySqlAdapters
 
                     LogHelper.info(string.Format("Open MySQL DB ({0}) connection successfully.[ConnectionState.Open]", m_openedCount));
                 }
+                else
+                {
+                    LogHelper.info(string.Format("Connection ({0}) is open, need not re-open.", m_openedCount));
+                }
             }
             catch (MySqlException e)
             {
