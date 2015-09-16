@@ -177,14 +177,24 @@ namespace MeDataAdapters
             return dt;
         }
 
-        internal int setState(int pid, int  pageNum, int clientCount, bool bCompleted)
+        internal int setPageNum(int pid, int  pageNum)
         {
             MySqlCommand sqlCmd = new MySqlCommand();
             sqlCmd.Connection = this.sqlConn;
-            sqlCmd.CommandText = string.Format("UPDATE {0} SET PageNum=@pageNum, ClientCount=@clientCount, PreyState=@preyState WHERE PhtgphrId=@pid", _tableName);
-            int preyState = bCompleted ? 1 : 0;
+            sqlCmd.CommandText = string.Format("UPDATE {0} SET PageNum=@pageNum WHERE PhtgphrId=@pid", _tableName);
             sqlCmd.Parameters.AddWithValue("@pid", pid);
             sqlCmd.Parameters.AddWithValue("@pageNum", pageNum);
+
+            return sqlCmd.ExecuteNonQuery();
+        }
+
+        internal int setClientCount(int pid, int clientCount, bool bCompleted)
+        {
+            MySqlCommand sqlCmd = new MySqlCommand();
+            sqlCmd.Connection = this.sqlConn;
+            sqlCmd.CommandText = string.Format("UPDATE {0} SET ClientCount=@clientCount, PreyState=@preyState WHERE PhtgphrId=@pid", _tableName);
+            int preyState = bCompleted ? 1 : 0;
+            sqlCmd.Parameters.AddWithValue("@pid", pid);
             sqlCmd.Parameters.AddWithValue("@clientCount", clientCount);
             sqlCmd.Parameters.AddWithValue("@preyState", preyState);
 

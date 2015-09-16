@@ -12,5 +12,14 @@
       <Value Profile="(Default)">http://www.p1.cn/siteadmin/photographer/upload.php?act=edit&amp;photographer_id={0}&amp;pu_id={1}
 </Value>
     </Setting>
+    <Setting Name="allPhtgpherUrl" Type="System.String" Scope="User">
+      <Value Profile="(Default)">http://www.p1.cn/siteadmin/photographer/photographers.php?act=all&amp;order=asc&amp;page={0}</Value>
+    </Setting>
+    <Setting Name="clientBaseUrl" Type="System.String" Scope="User">
+      <Value Profile="(Default)">http://www.p1.cn/siteadmin/photographer/photo.php?act=photographer&amp;photographer_id={0}&amp;page={1}</Value>
+    </Setting>
+    <Setting Name="intervalTime" Type="System.String" Scope="User">
+      <Value Profile="(Default)">5</Value>
+    </Setting>
   </Settings>
 </SettingsFile>

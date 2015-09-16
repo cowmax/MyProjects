@@ -24,6 +24,7 @@ namespace ClientPreyer
             txbUserName.Text = "emi00";
             txbPassword.Text = "101010";
 #endif
+            numIntervalTime.Value = int.Parse(_appSetting.intervalTime);
         }
 
         ThreadMgr mgr = new ThreadMgr();
@@ -32,23 +33,15 @@ namespace ClientPreyer
             if (mgr.isLogin)
             {
                 // Parse all photographer's info
-                // int nPhtgpher = mgr.preyPhotograpthers(2);
+                // int nPhtgpher = mgr.preyPhotograpthers(20);
 
                 // Parse all client's basic info
                 int nBase = mgr.preyAllClientBaseInfo();
 
                 // Parse all client's detail info
-                int nDetail = mgr.preyAllClientDetailInfo();
+                // int nDetail = mgr.preyAllClientDetailInfo();
+                mgr.preyAllClientDetailInfoAsync();
 
-                int nTask = mgr.loadTask();
-                if (nTask == 0)
-                {
-                    MessageBox.Show("没有新任务，或者任务已经处理完毕。");
-                }
-                else
-                {
-                    mgr.processTask(taskCompletedCallback);
-                }
             }
         }
 
@@ -102,6 +95,21 @@ namespace ClientPreyer
                 lblLoginStatus.Text = "未登录.";
             }
 
+        }
+
+        Properties.Settings _appSetting = new Properties.Settings();
+
+        private void numIntervalTime_ValueChanged(object sender, EventArgs e)
+        {
+            if (numIntervalTime.Value < 1)
+            {
+                MessageBox.Show("数据攫取的时间间隔不能小于 1.");
+            }
+            else
+            {
+                _appSetting.intervalTime = numIntervalTime.Value.ToString();
+                _appSetting.Save();
+            }
         }
     }
 }

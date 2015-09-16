@@ -20,11 +20,12 @@ namespace ClientPreyer
     {
         Properties.Settings _appSetting = new Properties.Settings();
         private List<int> _clientIdList = new List<int>();
-        private string _cookie;
+        private static string _cookie;
+        private static string _referer;
         private MyWebClient _wc;
         public bool isLogin;
 
-        public MyWebClient getWebClient()
+        public MyWebClient getWebClient(CookieContainer ccntr = null, string referer = null)
         {
             if (_wc == null)
             {
@@ -35,28 +36,43 @@ namespace ClientPreyer
                 if (_wc.ResponseHeaders != null && _wc.ResponseHeaders.AllKeys.Contains("Set-Cookie"))
                 {
                     _cookie = _wc.ResponseHeaders["Set-Cookie"];
+                    if (_cookie != null)
+                    {
+                        _wc.Headers.Add(HttpRequestHeader.Cookie, _cookie);
+                        LogHelper.info("getWebClient : _cookie - " + _cookie);
+                    }
                 }
             }
+
+            if (referer != null) _referer = referer;
+
             // Header 字段可以在发出请求报文后丢失，因此必须重新设置
             _wc.Headers.Clear();
             _wc.Headers.Add(HttpRequestHeader.ContentType, "application/x-www-form-urlencoded");
             _wc.Headers.Add(HttpRequestHeader.Accept, "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8");
             _wc.Headers.Add(HttpRequestHeader.AcceptEncoding, "gzip, deflate");
             _wc.Headers.Add(HttpRequestHeader.AcceptLanguage, "zh-CN,zh;q=0.8,en;q=0.6,zh-TW;q=0.4");
-            _wc.Headers.Add(HttpRequestHeader.Referer, "http://www.p1.cn/");
+            _wc.Headers.Add(HttpRequestHeader.Referer, referer);
             _wc.Encoding = new UTF8Encoding();
-
-            if (_cookie != null)
-            {
-                _wc.Headers.Add(HttpRequestHeader.Cookie, _cookie);
-            }
-
-            LogHelper.info("getWebClient : _cookie - " + _cookie);
 
             return _wc;
         }
 
-        public static MyWebClient createWebClient(string cookie=null)
+        private CookieContainer CurrentSessionCookies
+        {
+            get {
+                return _wc.CookieContainer;
+            }
+        }
+
+        private string Referer
+        {
+            get{
+                return _referer;
+            }
+        }
+
+        public static MyWebClient createWebClient(CookieContainer ccntr=null, string referer=null)
         {
             MyWebClient wbclnt = new MyWebClient();
 
@@ -65,23 +81,40 @@ namespace ClientPreyer
             wbclnt.Headers.Add(HttpRequestHeader.Accept, "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8");
             wbclnt.Headers.Add(HttpRequestHeader.AcceptEncoding, "gzip, deflate");
             wbclnt.Headers.Add(HttpRequestHeader.AcceptLanguage, "zh-CN,zh;q=0.8,en;q=0.6,zh-TW;q=0.4");
-            wbclnt.Headers.Add(HttpRequestHeader.Referer, "http://www.p1.cn/");
+            wbclnt.Headers.Add(HttpRequestHeader.Referer, referer);
             wbclnt.Encoding = new UTF8Encoding();
 
-            if (cookie != null)
+            if (ccntr != null)
             {
-                wbclnt.Headers.Add(HttpRequestHeader.Cookie, cookie);
+                /// wbclnt.Headers.Add(HttpRequestHeader.Cookie, cookie);
+                wbclnt.CookieContainer = ccntr;
+                _cookie = ccntr.GetCookieHeader(new Uri(referer));
+                LogHelper.info("create webclient with cookie : " + _cookie);
             }
 
-            LogHelper.info("create webclient with cookie : " + cookie);
+            if (referer != null) _referer = referer;
 
             return wbclnt;
         }
 
+        ClientDetailThread clidtlThread = null;
+
         internal void preyAllClientDetailInfoAsync()
         {
-            ClientDetailThread thread = new ClientDetailThread();
-            thread.start();
+            if (clidtlThread == null)
+            {
+                clidtlThread = new ClientDetailThread(CurrentSessionCookies, Referer);
+                int job_count = clidtlThread.loadJobs();
+            }
+
+            if (clidtlThread.isRuning)
+            {
+                clidtlThread.stop();
+            }
+            else
+            {
+                clidtlThread.start();
+            }
         }
 
         internal int preyAllClientDetailInfo()
@@ -144,7 +177,7 @@ namespace ClientPreyer
         {
             PhotographerAdapter adapter = new PhotographerAdapter();
             DataTable dt = adapter.getAllPhotographers(true);
-            int cliCount = 0;
+            int totalClient = 0;
             int total = 0;
 
             foreach(DataRow row in dt.Rows)
@@ -152,14 +185,14 @@ namespace ClientPreyer
                 int pid = (int)row["PhtgphrId"];
                 int pageNum = (int)row["PageNum"];
 
-                cliCount = preyClientBaseInfo(pid, pageNum+1, 100);
-                total += cliCount;
+                totalClient = preyClientBaseInfo(pid, pageNum+1, 100);
+                total += totalClient;
 
-                LogHelper.info(string.Format("Parse photographer(id={0}) pageNum={1} with {2} clients.", pid, pageNum, cliCount));
-                adapter.setState(pid, pageNum, cliCount, true); // Set photographer row to 'completed'
+                LogHelper.info(string.Format("Parse photographer(id={0}) pageNum={1} with totally {2} clients.", pid, pageNum, totalClient));
+                adapter.setClientCount(pid, totalClient, true); // Set photographer row to 'completed'
             }
 
-            return cliCount;
+            return totalClient;
         }
 
         internal int preyPhotograpthers(int pageNum)
@@ -167,11 +200,11 @@ namespace ClientPreyer
             int count = 0;
             MyWebClient wc = getWebClient();
 
-            string trgUrl = _appSetting.phtgpherUrl;
+            string trgTmplUrl = _appSetting.allPhtgpherUrl;
 
             for(int i=1; i <= pageNum; i++)
             {
-                string rspData = wc.DownloadString(trgUrl+"?page=" + i.ToString());
+                string rspData = wc.DownloadString(string.Format(trgTmplUrl, i.ToString()));
                 count += parsePhotographerInfo(rspData);
             }
 
@@ -188,7 +221,7 @@ namespace ClientPreyer
             {
                 foreach(Match mc in mchz)
                 {
-                    savePhotographerInfo(mc.Groups["ptgphrName"].Value,
+                    count += savePhotographerInfo(mc.Groups["ptgphrName"].Value,
                         mc.Groups["ptgphrId"].Value,
                         mc.Groups["gender"].Value);
                 }
@@ -197,13 +230,15 @@ namespace ClientPreyer
             return count;
         }
 
-        private void savePhotographerInfo(string ptgphrName, string ptgphrId, string gender)
+        private int savePhotographerInfo(string ptgphrName, string ptgphrId, string gender)
         {
             PhotographerAdapter adapter = new PhotographerAdapter();
-            if (adapter.insert(ptgphrName, ptgphrId, gender) == 1)
+            int count = adapter.insert(ptgphrName, ptgphrId, gender);
+            if (count==1)
             {
                 Debug.WriteLine(string.Format("[{0}, {1}, {2}]", ptgphrName, ptgphrId, gender));
             }
+            return count;
         }
 
         private void saveClientBaseInfo(int userId, string userName, string realName,
@@ -219,7 +254,8 @@ namespace ClientPreyer
 
         public bool Login(string userName, string password)
         {
-            MyWebClient wc = getWebClient();
+            string referer = "http://www.p1.cn/";
+            MyWebClient wc = getWebClient(null, referer);
 
             string trgUrl = _appSetting.loginUrl;
             string postData = string.Format("action=login&return_to={2}&frontpage=1&remember_me=1&login_name={0}&password={1}", 
@@ -227,7 +263,7 @@ namespace ClientPreyer
 
             string rspData = wc.UploadString(trgUrl, postData);
             
-            this.isLogin = isLoginSucc(wc.RespondCookies);
+            this.isLogin = isLoginSucc(wc.ResponseCookies);
 
             return this.isLogin;
         }
@@ -255,7 +291,7 @@ namespace ClientPreyer
             int cliCount = 0;
             int total = 0;
             WebClient wc = getWebClient();
-            string trgUrlTmpl = "http://www.p1.cn/siteadmin/photographer/photo.php?act=photographer&photographer_id={0}&page={1}";
+            string trgUrlTmpl = _appSetting.clientBaseUrl;
             string trgUrl = string.Empty;
             string rspData = string.Empty;
             PhotographerAdapter adapter = new PhotographerAdapter();
@@ -271,7 +307,7 @@ namespace ClientPreyer
                     cliCount = parseClientBaseInfo(rspData);
                     total += cliCount;
 
-                    adapter.setState(pid, i, cliCount, false);
+                    adapter.setPageNum(pid, i);
 
                     Debug.WriteLine("Parse potographer (id={0}) , page = {1},  records = {2} ", pid, i, cliCount);
                     LogHelper.info(string.Format("Parse potographer (id={0}) , pageIndex = {1} with {2} clients.", pid, i, cliCount));
@@ -300,9 +336,10 @@ namespace ClientPreyer
 
         private void waitRandomTime()
         {
+            int sec = int.Parse(_appSetting.intervalTime);
             Random rdm = new Random(DateTime.Now.Millisecond);
             int intvl = rdm.Next();
-            intvl = intvl % 1000;
+            intvl = intvl % (sec*1000);
             
             Debug.WriteLine("Take a break {0} milliseconds", intvl);
             Thread.Sleep(intvl);

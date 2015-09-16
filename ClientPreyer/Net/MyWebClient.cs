@@ -19,7 +19,7 @@ namespace MyNetwork
             get { return _cookieContainer; }
             set { _cookieContainer = value; }
         }
-        public CookieCollection RespondCookies
+        public CookieCollection ResponseCookies
         {
             get
             {

@@ -59,5 +59,43 @@ namespace ClientPreyer.Properties {
                 this["clientDetailUrl"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("http://www.p1.cn/siteadmin/photographer/photographers.php?act=all&order=asc&page=" +
+            "{0}")]
+        public string allPhtgpherUrl {
+            get {
+                return ((string)(this["allPhtgpherUrl"]));
+            }
+            set {
+                this["allPhtgpherUrl"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("http://www.p1.cn/siteadmin/photographer/photo.php?act=photographer&photographer_i" +
+            "d={0}&page={1}")]
+        public string clientBaseUrl {
+            get {
+                return ((string)(this["clientBaseUrl"]));
+            }
+            set {
+                this["clientBaseUrl"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("5")]
+        public string intervalTime {
+            get {
+                return ((string)(this["intervalTime"]));
+            }
+            set {
+                this["intervalTime"] = value;
+            }
+        }
     }
 }

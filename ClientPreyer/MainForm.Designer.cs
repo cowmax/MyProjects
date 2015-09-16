@@ -28,7 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
-            this.numericUpDown1 = new System.Windows.Forms.NumericUpDown();
+            this.numIntervalTime = new System.Windows.Forms.NumericUpDown();
             this.label1 = new System.Windows.Forms.Label();
             this.label2 = new System.Windows.Forms.Label();
             this.btnStart = new System.Windows.Forms.Button();
@@ -39,15 +39,21 @@
             this.label4 = new System.Windows.Forms.Label();
             this.btnLogin = new System.Windows.Forms.Button();
             this.lblLoginStatus = new System.Windows.Forms.Label();
-            ((System.ComponentModel.ISupportInitialize)(this.numericUpDown1)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.numIntervalTime)).BeginInit();
             this.SuspendLayout();
             // 
-            // numericUpDown1
+            // numIntervalTime
             // 
-            this.numericUpDown1.Location = new System.Drawing.Point(87, 17);
-            this.numericUpDown1.Name = "numericUpDown1";
-            this.numericUpDown1.Size = new System.Drawing.Size(77, 21);
-            this.numericUpDown1.TabIndex = 0;
+            this.numIntervalTime.Location = new System.Drawing.Point(87, 17);
+            this.numIntervalTime.Name = "numIntervalTime";
+            this.numIntervalTime.Size = new System.Drawing.Size(54, 21);
+            this.numIntervalTime.TabIndex = 0;
+            this.numIntervalTime.Value = new decimal(new int[] {
+            3,
+            0,
+            0,
+            0});
+            this.numIntervalTime.ValueChanged += new System.EventHandler(this.numIntervalTime_ValueChanged);
             // 
             // label1
             // 
@@ -61,7 +67,7 @@
             // label2
             // 
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(170, 21);
+            this.label2.Location = new System.Drawing.Point(147, 19);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(29, 12);
             this.label2.TabIndex = 2;
@@ -152,14 +158,14 @@
             this.Controls.Add(this.btnStart);
             this.Controls.Add(this.label2);
             this.Controls.Add(this.label1);
-            this.Controls.Add(this.numericUpDown1);
+            this.Controls.Add(this.numIntervalTime);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
             this.MaximizeBox = false;
             this.MinimizeBox = false;
             this.Name = "mainForm";
             this.Text = "Client Preyer";
             this.Load += new System.EventHandler(this.mainForm_Load);
-            ((System.ComponentModel.ISupportInitialize)(this.numericUpDown1)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.numIntervalTime)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -167,7 +173,7 @@
 
         #endregion
 
-        private System.Windows.Forms.NumericUpDown numericUpDown1;
+        private System.Windows.Forms.NumericUpDown numIntervalTime;
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.Button btnStart;
