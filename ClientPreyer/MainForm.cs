@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using MeDataAdapters;
+using ShingSoft.Common;
 
 namespace ClientPreyer
 {
@@ -20,9 +21,10 @@ namespace ClientPreyer
 
         private void mainForm_Load(object sender, EventArgs e)
         {
-#if DEBUG 
-            txbUserName.Text = "emi00";
-            txbPassword.Text = "101010";
+#if DEBUG
+            loadUserInfo();
+#else
+            loadUserInfo();
 #endif
             numIntervalTime.Value = int.Parse(_appSetting.intervalTime);
         }
@@ -50,8 +52,36 @@ namespace ClientPreyer
 
         }
 
-        private void btnLogin_Click(object sender, EventArgs e)
+        private void loadUserInfo()
         {
+            txbUserName.Text = _appSetting.userName;
+            txbPassword.Text = decryptString(_appSetting.password);
+        }
+
+        private string decryptString(string text)
+        {
+            return DesCrypto.DecryptDES(text, DesCrypto.DES_KEY);
+        }
+
+        private string encryptString(string text)
+        {
+            return DesCrypto.EncryptDES(text, DesCrypto.DES_KEY);
+        }
+
+        private void saveUserInfo()
+        {
+            if (validSetting())
+            {
+                _appSetting.userName = txbUserName.Text;
+                _appSetting.password = encryptString(txbPassword.Text);
+                _appSetting.Save();
+            }
+        }
+
+        private bool validSetting()
+        {
+            int nValidBits = 0x0;
+
             string userName = txbUserName.Text;
             string password = txbPassword.Text;
 
@@ -63,6 +93,7 @@ namespace ClientPreyer
             else
             {
                 MessageBox.Show("用户名不能为空.");
+                nValidBits |= 0x1;
             }
 
             if (!string.IsNullOrEmpty(password))
@@ -72,29 +103,40 @@ namespace ClientPreyer
             else
             {
                 MessageBox.Show("密码不能为空.");
+                nValidBits |= 0x2;
             }
 
-            SysUserAdapter adpter = new SysUserAdapter();
-            DataTable dt  = adpter.getSysUser(userName, password);
+            return (nValidBits == 0);
+        }
 
-            if (dt != null && dt.Rows.Count == 1)
+        private void btnLogin_Click(object sender, EventArgs e)
+        {
+            string userName = txbUserName.Text;
+            string password = txbPassword.Text;
+
+            if (validSetting())
             {
-                if (mgr.Login(userName, password))
+                SysUserAdapter adpter = new SysUserAdapter();
+                DataTable dt  = adpter.getSysUser(userName, password);
+
+                if (dt != null && dt.Rows.Count == 1)
                 {
-                    lblLoginStatus.Text = "已登录.";
-                    rtxLog.Text += "登录目标网站成功.\n";
+                    if (mgr.Login(userName, password))
+                    {
+                        lblLoginStatus.Text = "已登录.";
+                        rtxLog.Text += "登录目标网站成功.\n";
+                    }
+                    else
+                    {
+                        rtxLog.Text += "登录目标网站失败.\n";
+                    }
                 }
                 else
                 {
-                    rtxLog.Text += "登录目标网站失败.\n";
+                    MessageBox.Show("登录失败，请检查用户名或密码是否正确.");
+                    lblLoginStatus.Text = "未登录.";
                 }
             }
-            else
-            {
-                MessageBox.Show("登录失败，请检查用户名或密码是否正确.");
-                lblLoginStatus.Text = "未登录.";
-            }
-
         }
 
         Properties.Settings _appSetting = new Properties.Settings();
@@ -110,6 +152,11 @@ namespace ClientPreyer
                 _appSetting.intervalTime = numIntervalTime.Value.ToString();
                 _appSetting.Save();
             }
+        }
+
+        private void btnSaveSetting_Click(object sender, EventArgs e)
+        {
+            saveUserInfo();
         }
     }
 }

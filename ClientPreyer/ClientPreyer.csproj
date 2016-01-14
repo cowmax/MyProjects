@@ -55,6 +55,7 @@
   <ItemGroup>
     <Compile Include="ClientIdPreyerThread.cs" />
     <Compile Include="ClientDetailThread.cs" />
+    <Compile Include="Common\DesCrypto.cs" />
     <Compile Include="Data\MySqlAdapter.cs" />
     <Compile Include="Data\MeDataAdapters.cs" />
     <Compile Include="LogHelper\LogHelper.cs" />

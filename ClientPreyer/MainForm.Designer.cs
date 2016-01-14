@@ -39,6 +39,7 @@
             this.label4 = new System.Windows.Forms.Label();
             this.btnLogin = new System.Windows.Forms.Button();
             this.lblLoginStatus = new System.Windows.Forms.Label();
+            this.btnSaveSetting = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.numIntervalTime)).BeginInit();
             this.SuspendLayout();
             // 
@@ -137,17 +138,28 @@
             // lblLoginStatus
             // 
             this.lblLoginStatus.AutoSize = true;
-            this.lblLoginStatus.Location = new System.Drawing.Point(206, 277);
+            this.lblLoginStatus.Location = new System.Drawing.Point(16, 322);
             this.lblLoginStatus.Name = "lblLoginStatus";
             this.lblLoginStatus.Size = new System.Drawing.Size(59, 12);
             this.lblLoginStatus.TabIndex = 10;
             this.lblLoginStatus.Text = "登录状态.";
             // 
+            // btnSaveSetting
+            // 
+            this.btnSaveSetting.Location = new System.Drawing.Point(198, 267);
+            this.btnSaveSetting.Name = "btnSaveSetting";
+            this.btnSaveSetting.Size = new System.Drawing.Size(75, 23);
+            this.btnSaveSetting.TabIndex = 11;
+            this.btnSaveSetting.Text = "Save";
+            this.btnSaveSetting.UseVisualStyleBackColor = true;
+            this.btnSaveSetting.Click += new System.EventHandler(this.btnSaveSetting_Click);
+            // 
             // mainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(371, 307);
+            this.ClientSize = new System.Drawing.Size(371, 343);
+            this.Controls.Add(this.btnSaveSetting);
             this.Controls.Add(this.lblLoginStatus);
             this.Controls.Add(this.btnLogin);
             this.Controls.Add(this.txbPassword);
@@ -184,6 +196,7 @@
         private System.Windows.Forms.Label label4;
         private System.Windows.Forms.Button btnLogin;
         private System.Windows.Forms.Label lblLoginStatus;
+        private System.Windows.Forms.Button btnSaveSetting;
     }
 }
 
