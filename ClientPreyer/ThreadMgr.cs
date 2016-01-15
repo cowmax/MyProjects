@@ -33,7 +33,7 @@ namespace ClientPreyer
             if (refUrl != null) _referer = refUrl;
 
             // 设置 Headers，发出请求报文后会丢失，因此必须重新设置
-            setRequestHeaders(_wc, refUrl);
+            setRequestHeaders(_wc, _referer);
 
             // 设置 Cookies
             if (_wc.ResponseHeaders != null && _wc.ResponseHeaders.AllKeys.Contains("Set-Cookie"))
@@ -49,7 +49,7 @@ namespace ClientPreyer
             return _wc;
         }
 
-        private void setRequestHeaders(MyWebClient wc, string refUrl)
+        private static void setRequestHeaders(MyWebClient wc, string refUrl)
         {
             wc.Headers.Clear();
             wc.Headers.Add(HttpRequestHeader.ContentType, "application/x-www-form-urlencoded");
@@ -68,9 +68,11 @@ namespace ClientPreyer
 
             try
             {
-                MyWebClient wc = createWebClient(null, refUrl);
+                MyWebClient wc = getWebClient(null, refUrl);
 
-                string rspData = wc.UploadString(trgUrl, postData);
+                // string rspData = wc.UploadString(trgUrl, postData);
+                string rspData = wc.DownloadString(trgUrl);
+
                 LoadAttendanceResult rsl = new LoadAttendanceResult(rspData);
 
                 LogHelper.info(string.Format("Load attendance file list {0} .", rsl.fileCount));
@@ -98,19 +100,17 @@ namespace ClientPreyer
         }
 
         // Create a new WebClient object
-        public MyWebClient createWebClient(CookieContainer ccntr=null, string referer=null)
+        public static MyWebClient createWebClient(CookieContainer ccntr=null, string refUrl=null)
         {
             MyWebClient wbclnt = new MyWebClient();
 
             // Header 字段可能在发出请求报文后丢失，因此必须重新设置
-            setRequestHeaders(wbclnt);
+            setRequestHeaders(wbclnt, refUrl);
 
             if (ccntr != null)
             {
                 wbclnt.CookieContainer = ccntr;
             }
-
-            if (referer != null) _referer = referer;
 
             return wbclnt;
         }
@@ -275,10 +275,10 @@ namespace ClientPreyer
         {
             string trgUrl = _appSetting.loginUrl;
             string refUrl = _appSetting.refererUrl;
-            string postData = string.Format("login_type=default&username={0}&password={1}&identify=",
+            string postData = string.Format("login_type=default&username={0}&password={1}&identify=", 
                 userName, password);
 
-            MyWebClient wc = createWebClient(null, refUrl);
+            MyWebClient wc = getWebClient(null, refUrl);
 
             string rspData = wc.UploadString(trgUrl, postData);
 
