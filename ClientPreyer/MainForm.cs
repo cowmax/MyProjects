@@ -44,7 +44,7 @@ namespace ClientPreyer
         {
 #if DEBUG
             txbUserName.Text = _appSetting.userName;
-            txbPassword.Text = _appSetting.password;
+            txbPassword.Text = decryptString(_appSetting.password);
 #else
             txbUserName.Text = _appSetting.userName;
             txbPassword.Text = decryptString(_appSetting.password);

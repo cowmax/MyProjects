@@ -46,6 +46,11 @@ namespace ClientPreyer
                 }
             }
 
+            if (ccntr != null)
+            {
+                _wc.CookieContainer.Add(ccntr.GetCookies(new Uri("http://web.jingoal.com")));
+            }
+
             return _wc;
         }
 
@@ -68,7 +73,19 @@ namespace ClientPreyer
 
             try
             {
-                MyWebClient wc = getWebClient(null, refUrl);
+                CookieContainer cc = new CookieContainer();
+                string strCookies = "route=60cd899e37616d32b077390b1a32217d; apps=jmbmgtweb; JSESSIONID=FC0EDA9813B60450D02B040011F40638; bigDataUuid=e38b5fa4-e935-f7b3-f15f-7e5ef0fa4048; Hm_lvt_586f9b4035e5997f77635b13cc04984c=1452703716,1452869751; Hm_lpvt_586f9b4035e5997f77635b13cc04984c=1452869751; _ga=GA1.2.19950754.1452869751; _gat=1";
+                string[] cookies = strCookies.Split(';');
+                foreach(string c  in cookies)
+                {
+                    string[] ck = c.Split('=');
+                    if (ck.Length == 2)
+                    {
+                        Cookie cki = new Cookie(ck[0].Trim(), ck[1].Trim(), "/", ".jingoal.com");
+                        cc.Add(cki);
+                    }
+                }
+                MyWebClient wc = getWebClient(cc, refUrl);
 
                 // string rspData = wc.UploadString(trgUrl, postData);
                 string rspData = wc.DownloadString(trgUrl);

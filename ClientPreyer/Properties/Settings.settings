@@ -22,10 +22,10 @@
       <Value Profile="(Default)">5</Value>
     </Setting>
     <Setting Name="userName" Type="System.String" Scope="User">
-      <Value Profile="(Default)">刘振诚@9968897</Value>
+      <Value Profile="(Default)" />
     </Setting>
     <Setting Name="password" Type="System.String" Scope="User">
-      <Value Profile="(Default)">7c222fb2927d828af22f592134e8932480637c0d</Value>
+      <Value Profile="(Default)" />
     </Setting>
     <Setting Name="refererUrl" Type="System.String" Scope="User">
       <Value Profile="(Default)">http://web.jingoal.com/</Value>
