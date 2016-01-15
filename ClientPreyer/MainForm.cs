@@ -21,11 +21,7 @@ namespace ClientPreyer
 
         private void mainForm_Load(object sender, EventArgs e)
         {
-#if DEBUG
             loadUserInfo();
-#else
-            loadUserInfo();
-#endif
             numIntervalTime.Value = int.Parse(_appSetting.intervalTime);
         }
 
@@ -34,15 +30,7 @@ namespace ClientPreyer
         {
             if (mgr.isLogin)
             {
-                // Parse all photographer's info
-                // int nPhtgpher = mgr.preyPhotograpthers(20);
-
-                // Parse all client's basic info
-                int nBase = mgr.preyAllClientBaseInfo();
-
-                // Parse all client's detail info
-                // int nDetail = mgr.preyAllClientDetailInfo();
-                mgr.preyAllClientDetailInfoAsync();
+                mgr.loadAttendanceList();
 
             }
         }
@@ -54,8 +42,13 @@ namespace ClientPreyer
 
         private void loadUserInfo()
         {
+#if DEBUG
+            txbUserName.Text = _appSetting.userName;
+            txbPassword.Text = _appSetting.password;
+#else
             txbUserName.Text = _appSetting.userName;
             txbPassword.Text = decryptString(_appSetting.password);
+#endif
         }
 
         private string decryptString(string text)
@@ -116,27 +109,22 @@ namespace ClientPreyer
 
             if (validSetting())
             {
-                SysUserAdapter adpter = new SysUserAdapter();
-                DataTable dt  = adpter.getSysUser(userName, password);
-
-                if (dt != null && dt.Rows.Count == 1)
+                if (mgr.Login(userName, password))
                 {
-                    if (mgr.Login(userName, password))
-                    {
-                        lblLoginStatus.Text = "已登录.";
-                        rtxLog.Text += "登录目标网站成功.\n";
-                    }
-                    else
-                    {
-                        rtxLog.Text += "登录目标网站失败.\n";
-                    }
+                    lblLoginStatus.Text = "已登录.";
+                    rtxLog.Text += "登录目标网站成功.\n";
                 }
                 else
                 {
-                    MessageBox.Show("登录失败，请检查用户名或密码是否正确.");
-                    lblLoginStatus.Text = "未登录.";
+                    rtxLog.Text += "登录目标网站失败.\n";
                 }
             }
+            else
+            {
+                MessageBox.Show("登录失败，请检查用户名或密码是否正确.");
+                lblLoginStatus.Text = "未登录.";
+            }
+
         }
 
         Properties.Settings _appSetting = new Properties.Settings();

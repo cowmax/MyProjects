@@ -37,7 +37,9 @@ namespace ClientPreyer.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("http://www.p1.cn/reg/login.php")]
+        [global::System.Configuration.DefaultSettingValueAttribute("https://sso.jingoal.com/oauth/authorize?client_id=jmbmgtweb&response_type=code&st" +
+            "ate=%7Baccess_count%3A1%7D&locale=zh_CN&redirect_uri=http%3A%2F%2Fweb.jingoal.co" +
+            "m%2F%23workbench")]
         public string loginUrl {
             get {
                 return ((string)(this["loginUrl"]));
@@ -100,7 +102,7 @@ namespace ClientPreyer.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        [global::System.Configuration.DefaultSettingValueAttribute("刘振诚@9968897")]
         public string userName {
             get {
                 return ((string)(this["userName"]));
@@ -112,13 +114,37 @@ namespace ClientPreyer.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        [global::System.Configuration.DefaultSettingValueAttribute("7c222fb2927d828af22f592134e8932480637c0d")]
         public string password {
             get {
                 return ((string)(this["password"]));
             }
             set {
                 this["password"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("http://web.jingoal.com/")]
+        public string refererUrl {
+            get {
+                return ((string)(this["refererUrl"]));
+            }
+            set {
+                this["refererUrl"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("http://web.jingoal.com/attendance/attend/export/exportFile.do")]
+        public string attListUrl {
+            get {
+                return ((string)(this["attListUrl"]));
+            }
+            set {
+                this["attListUrl"] = value;
             }
         }
     }

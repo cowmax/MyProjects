@@ -13,6 +13,7 @@ using System.Web;
 using Logging;
 using MeDataAdapters;
 using MyNetwork;
+using ClientPreyer.Net;
 
 namespace ClientPreyer
 {
@@ -20,42 +21,66 @@ namespace ClientPreyer
     {
         Properties.Settings _appSetting = new Properties.Settings();
         private List<int> _clientIdList = new List<int>();
-        private static string _cookie;
+        private static string _current_cookies;
         private static string _referer;
         private MyWebClient _wc;
         public bool isLogin;
 
-        public MyWebClient getWebClient(CookieContainer ccntr = null, string referer = null)
+        // Get the only instance of WebClient 
+        public MyWebClient getWebClient(CookieContainer ccntr = null, string refUrl = null)
         {
-            if (_wc == null)
+            if (_wc == null) _wc = new MyWebClient();
+            if (refUrl != null) _referer = refUrl;
+
+            // 设置 Headers，发出请求报文后会丢失，因此必须重新设置
+            setRequestHeaders(_wc, refUrl);
+
+            // 设置 Cookies
+            if (_wc.ResponseHeaders != null && _wc.ResponseHeaders.AllKeys.Contains("Set-Cookie"))
             {
-                _wc = new MyWebClient();
-            }
-            else // Update cookie
-            {
-                if (_wc.ResponseHeaders != null && _wc.ResponseHeaders.AllKeys.Contains("Set-Cookie"))
+                _current_cookies = _wc.ResponseHeaders["Set-Cookie"];
+                if (_current_cookies != null)
                 {
-                    _cookie = _wc.ResponseHeaders["Set-Cookie"];
-                    if (_cookie != null)
-                    {
-                        _wc.Headers.Add(HttpRequestHeader.Cookie, _cookie);
-                        LogHelper.info("getWebClient : _cookie - " + _cookie);
-                    }
+                    _wc.Headers.Add(HttpRequestHeader.Cookie, _current_cookies);
+                    LogHelper.info("getWebClient : _cookie - " + _current_cookies);
                 }
             }
 
-            if (referer != null) _referer = referer;
-
-            // Header 字段可以在发出请求报文后丢失，因此必须重新设置
-            _wc.Headers.Clear();
-            _wc.Headers.Add(HttpRequestHeader.ContentType, "application/x-www-form-urlencoded");
-            _wc.Headers.Add(HttpRequestHeader.Accept, "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8");
-            _wc.Headers.Add(HttpRequestHeader.AcceptEncoding, "gzip, deflate");
-            _wc.Headers.Add(HttpRequestHeader.AcceptLanguage, "zh-CN,zh;q=0.8,en;q=0.6,zh-TW;q=0.4");
-            _wc.Headers.Add(HttpRequestHeader.Referer, referer);
-            _wc.Encoding = new UTF8Encoding();
-
             return _wc;
+        }
+
+        private void setRequestHeaders(MyWebClient wc, string refUrl)
+        {
+            wc.Headers.Clear();
+            wc.Headers.Add(HttpRequestHeader.ContentType, "application/x-www-form-urlencoded");
+            wc.Headers.Add(HttpRequestHeader.Accept, "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8");
+            wc.Headers.Add(HttpRequestHeader.AcceptEncoding, "gzip, deflate");
+            wc.Headers.Add(HttpRequestHeader.AcceptLanguage, "zh-CN,zh;q=0.8,en;q=0.6,zh-TW;q=0.4");
+            wc.Headers.Add(HttpRequestHeader.Referer, refUrl);
+            wc.Encoding = new UTF8Encoding();
+        }
+
+        internal void loadAttendanceList()
+        {
+            string refUrl = _appSetting.refererUrl;
+            string trgUrl = _appSetting.attListUrl;
+            string postData = string.Format("type={0}&curr={1}", 2, 1);
+
+            try
+            {
+                MyWebClient wc = createWebClient(null, refUrl);
+
+                string rspData = wc.UploadString(trgUrl, postData);
+                LoadAttendanceResult rsl = new LoadAttendanceResult(rspData);
+
+                LogHelper.info(string.Format("Load attendance file list {0} .", rsl.fileCount));
+
+            }
+            catch (WebException wex)
+            {
+                LogHelper.error(wex.Message);
+            }
+
         }
 
         private CookieContainer CurrentSessionCookies
@@ -72,24 +97,17 @@ namespace ClientPreyer
             }
         }
 
-        public static MyWebClient createWebClient(CookieContainer ccntr=null, string referer=null)
+        // Create a new WebClient object
+        public MyWebClient createWebClient(CookieContainer ccntr=null, string referer=null)
         {
             MyWebClient wbclnt = new MyWebClient();
 
-            // Header 字段可以在发出请求报文后丢失，因此必须重新设置
-            wbclnt.Headers.Add(HttpRequestHeader.ContentType, "application/x-www-form-urlencoded");
-            wbclnt.Headers.Add(HttpRequestHeader.Accept, "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8");
-            wbclnt.Headers.Add(HttpRequestHeader.AcceptEncoding, "gzip, deflate");
-            wbclnt.Headers.Add(HttpRequestHeader.AcceptLanguage, "zh-CN,zh;q=0.8,en;q=0.6,zh-TW;q=0.4");
-            wbclnt.Headers.Add(HttpRequestHeader.Referer, referer);
-            wbclnt.Encoding = new UTF8Encoding();
+            // Header 字段可能在发出请求报文后丢失，因此必须重新设置
+            setRequestHeaders(wbclnt);
 
             if (ccntr != null)
             {
-                /// wbclnt.Headers.Add(HttpRequestHeader.Cookie, cookie);
                 wbclnt.CookieContainer = ccntr;
-                _cookie = ccntr.GetCookieHeader(new Uri(referer));
-                LogHelper.info("create webclient with cookie : " + _cookie);
             }
 
             if (referer != null) _referer = referer;
@@ -98,7 +116,7 @@ namespace ClientPreyer
         }
 
         ClientDetailThread clidtlThread = null;
-
+        #region abandoned code ...
         internal void preyAllClientDetailInfoAsync()
         {
             if (clidtlThread == null)
@@ -251,39 +269,24 @@ namespace ClientPreyer
                 Debug.WriteLine(string.Format("[{0}, {1}, {2}]", userId, userName, realName));
             }
         }
+        #endregion abandoned code ...
 
         public bool Login(string userName, string password)
         {
-            string referer = "http://www.p1.cn/";
-            MyWebClient wc = getWebClient(null, referer);
-
             string trgUrl = _appSetting.loginUrl;
-            string postData = string.Format("action=login&return_to={2}&frontpage=1&remember_me=1&login_name={0}&password={1}", 
-                userName, password, "/siteadmin/photographer/photographers.php");
+            string refUrl = _appSetting.refererUrl;
+            string postData = string.Format("login_type=default&username={0}&password={1}&identify=",
+                userName, password);
+
+            MyWebClient wc = createWebClient(null, refUrl);
 
             string rspData = wc.UploadString(trgUrl, postData);
-            
-            this.isLogin = isLoginSucc(wc.ResponseCookies);
+
+            LoginResult rsl = new LoginResult(rspData);
+
+            this.isLogin = rsl.isLoginSucc();
 
             return this.isLogin;
-        }
-
-        private bool isLoginSucc(CookieCollection cookies)
-        {
-            CookieContainer cctner = new CookieContainer();
-            
-            bool bLogin = false;
-            if (cookies != null)
-            {
-                Cookie ck = cookies["user_login"];
-                if (ck != null)
-                {
-                    bLogin = true;
-                    LogHelper.info(string.Format("Login website as {0}", ck.Value));
-                }
-            }
-
-            return bLogin;
         }
 
         public int preyClientBaseInfo(int pid, int startIdx, int maxPageNum)
@@ -304,7 +307,7 @@ namespace ClientPreyer
                 try
                 {
                     rspData = wc.DownloadString(trgUrl);
-                    cliCount = parseClientBaseInfo(rspData);
+                    cliCount = parseAttendanceList(rspData);
                     total += cliCount;
 
                     adapter.setPageNum(pid, i);
@@ -345,7 +348,7 @@ namespace ClientPreyer
             Thread.Sleep(intvl);
         }
 
-        private int parseClientBaseInfo(string rspData)
+        private int parseAttendanceList(string rspData)
         {
             int count = 0;
             Regex rgx = new Regex("<td>(?<userName>\\w+)</td>\\r\\s<td>(?<realName>\\w+)</td>\\r\\s<td\\salign=\"center\">"

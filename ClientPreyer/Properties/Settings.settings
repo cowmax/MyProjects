@@ -6,7 +6,7 @@
       <Value Profile="(Default)">http://www.p1.cn/siteadmin/photographer/photographers.php</Value>
     </Setting>
     <Setting Name="loginUrl" Type="System.String" Scope="User">
-      <Value Profile="(Default)">http://www.p1.cn/reg/login.php</Value>
+      <Value Profile="(Default)">https://sso.jingoal.com/oauth/authorize?client_id=jmbmgtweb&amp;response_type=code&amp;state=%7Baccess_count%3A1%7D&amp;locale=zh_CN&amp;redirect_uri=http%3A%2F%2Fweb.jingoal.com%2F%23workbench</Value>
     </Setting>
     <Setting Name="clientDetailUrl" Type="System.String" Scope="User">
       <Value Profile="(Default)">http://www.p1.cn/siteadmin/photographer/upload.php?act=edit&amp;photographer_id={0}&amp;pu_id={1}
@@ -22,10 +22,16 @@
       <Value Profile="(Default)">5</Value>
     </Setting>
     <Setting Name="userName" Type="System.String" Scope="User">
-      <Value Profile="(Default)" />
+      <Value Profile="(Default)">刘振诚@9968897</Value>
     </Setting>
     <Setting Name="password" Type="System.String" Scope="User">
-      <Value Profile="(Default)" />
+      <Value Profile="(Default)">7c222fb2927d828af22f592134e8932480637c0d</Value>
+    </Setting>
+    <Setting Name="refererUrl" Type="System.String" Scope="User">
+      <Value Profile="(Default)">http://web.jingoal.com/</Value>
+    </Setting>
+    <Setting Name="attListUrl" Type="System.String" Scope="User">
+      <Value Profile="(Default)">http://web.jingoal.com/attendance/attend/export/exportFile.do</Value>
     </Setting>
   </Settings>
 </SettingsFile>
