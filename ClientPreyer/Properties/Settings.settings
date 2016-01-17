@@ -33,5 +33,8 @@
     <Setting Name="attListUrl" Type="System.String" Scope="User">
       <Value Profile="(Default)">http://web.jingoal.com/attendance/attend/export/exportFile.do</Value>
     </Setting>
+    <Setting Name="userCfgUrl" Type="System.String" Scope="User">
+      <Value Profile="(Default)">http://web.jingoal.com/mgt/workbench/v1/get_userconfig?code={0}&amp;ouri={1}</Value>
+    </Setting>
   </Settings>
 </SettingsFile>

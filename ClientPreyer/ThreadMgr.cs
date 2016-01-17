@@ -21,37 +21,18 @@ namespace ClientPreyer
     {
         Properties.Settings _appSetting = new Properties.Settings();
         private List<int> _clientIdList = new List<int>();
-        private static string _current_cookies;
         private static string _referer;
         private MyWebClient _wc;
         public bool isLogin;
 
         // Get the only instance of WebClient 
-        public MyWebClient getWebClient(CookieContainer ccntr = null, string refUrl = null)
+        public MyWebClient getWebClient(string refUrl = null)
         {
             if (_wc == null) _wc = new MyWebClient();
             if (refUrl != null) _referer = refUrl;
 
             // 设置 Headers，发出请求报文后会丢失，因此必须重新设置
             setRequestHeaders(_wc, _referer);
-
-            // 设置 Cookies
-            if (_wc.ResponseHeaders != null && _wc.ResponseHeaders.AllKeys.Contains("Set-Cookie"))
-            {
-                _wc.CookieContainer.Add(_wc.ResponseCookies);
-
-                //_current_cookies = _wc.ResponseHeaders["Set-Cookie"];
-                //if (_current_cookies != null)
-                //{
-                //    _wc.Headers.Add(HttpRequestHeader.Cookie, _current_cookies);
-                //    LogHelper.info("getWebClient : _cookie - " + _current_cookies);
-                //}
-            }
-
-            if (ccntr != null)
-            {
-                _wc.CookieContainer.Add(ccntr.GetCookies(new Uri("http://web.jingoal.com")));
-            }
 
             return _wc;
         }
@@ -65,6 +46,35 @@ namespace ClientPreyer
             wc.Headers.Add(HttpRequestHeader.AcceptLanguage, "zh-CN,zh;q=0.8,en;q=0.6,zh-TW;q=0.4");
             wc.Headers.Add(HttpRequestHeader.Referer, refUrl);
             wc.Encoding = new UTF8Encoding();
+        }
+
+        internal void loadUserCfg()
+        {
+            string trgUrl = string.Format(_appSetting.userCfgUrl, "J9REAR", "http://web.jingoal.com/"); // code:J9REAR 是 企业代码
+            string refUrl = "http://web.jingoal.com/?code=J9REAR&state=%7Baccess_count:1%7D";
+
+            MyWebClient wc = getWebClient(refUrl);
+
+            CookieCollection ckiColn = new CookieCollection();
+
+            ckiColn.Add(new Cookie("Hm_lpvt_586f9b4035e5997f77635b13cc04984c", "1453004294"));
+            ckiColn.Add(new Cookie("Hm_lvt_586f9b4035e5997f77635b13cc04984c", "1452703716"));
+            ckiColn.Add(new Cookie("Hm_lvt_586f9b4035e5997f77635b13cc04984c", "1452869751"));
+            ckiColn.Add(new Cookie("Hm_lvt_586f9b4035e5997f77635b13cc04984c", "1453003326"));
+            ckiColn.Add(new Cookie("TOURL", "http%3A%2F%2Fweb.jingoal.com%2Fmodule%2Fcalendar%2Fworkbench%2FgetMarkDays.do%3FcalendarId%3D0%26currMonth%3D2016%2F1%26b1453004147530%3D1"));
+            ckiColn.Add(new Cookie("_ga", "GA1.2.19950754.1452869751"));
+            ckiColn.Add(new Cookie("_gat", "1"));
+            ckiColn.Add(new Cookie("code", "J9REAR"));
+            ckiColn.Add(new Cookie("flag", "login"));
+            ckiColn.Add(new Cookie("ouri", "http://web.jingoal.com/"));
+
+            wc.CookieContainer.Add(new Uri("http://web.jingoal.com"), ckiColn);
+
+            string rspData = wc.DownloadString(trgUrl);
+
+            LoadUserCfgResult rsl = new LoadUserCfgResult(rspData);
+
+            LogHelper.info(string.Format("Load user config {0}", rsl.IsSucc ? "true" : "false"));
         }
 
         internal void loadAttendanceList()
@@ -86,24 +96,10 @@ namespace ClientPreyer
 
                 CookieCollection ckiColn = new CookieCollection();
 
-                ckiColn.Add(new Cookie("JSESSIONID", "8BF29417A6448590DC061EEBF3EF6B2A"));
-                ckiColn.Add(new Cookie("ouri", "http%3A%2F%2Fweb.jingoal.com%2F%23workbench"));
-                ckiColn.Add(new Cookie("_ga", "GA1.2.19950754.1452869751"));
-                ckiColn.Add(new Cookie("Hm_lvt_586f9b4035e5997f77635b13cc04984c", "1452703716"));
-                ckiColn.Add(new Cookie("Hm_lvt_586f9b4035e5997f77635b13cc04984c", "1452869751"));
-                ckiColn.Add(new Cookie("Hm_lvt_586f9b4035e5997f77635b13cc04984c", "1453003326"));
-                ckiColn.Add(new Cookie("Hm_lpvt_586f9b4035e5997f77635b13cc04984c", "1453004294"));
-                ckiColn.Add(new Cookie("code", "J9REAR"));
                 ckiColn.Add(new Cookie("JINSESSIONID", "ee5faeac-84a6-448f-9dd5-356b801c85f1"));
-                ckiColn.Add(new Cookie("cid", "4621068"));
-                ckiColn.Add(new Cookie("uid", "15965118"));
-                ckiColn.Add(new Cookie("showbanners", "true"));
-                ckiColn.Add(new Cookie("route", "602865b3d374a0c5cf9f73c9ebef0558"));
-                ckiColn.Add(new Cookie("TOURL", "http%3A%2F%2Fweb.jingoal.com%2Fmodule%2Fcalendar%2Fworkbench%2FgetMarkDays.do%3FcalendarId%3D0%26currMonth%3D2016%2F1%26b1453010055520%3D1"));
 
                 wc.CookieContainer.Add(new Uri("http://web.jingoal.com"), ckiColn);
                 string rspData = wc.UploadString(trgUrl, "");
-                //string rspData = wc.DownloadString(trgUrl);
 
                 LoadAttendanceResult rsl = new LoadAttendanceResult(rspData);
 
@@ -310,7 +306,7 @@ namespace ClientPreyer
             string postData = string.Format("login_type=default&username={0}&password={1}&identify=", 
                 userName, password);
 
-            MyWebClient wc = getWebClient(null, refUrl);
+            MyWebClient wc = getWebClient(refUrl);
 
             string rspData = wc.UploadString(trgUrl, postData);
 

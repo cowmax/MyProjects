@@ -79,4 +79,22 @@ namespace ClientPreyer.Net
             get { return atndList.Count(); }
         }
     }
+    // {"meta":{"code":401,"message":""}}
+    class LoadUserCfgResult : BaseResult
+    {
+        bool _isSucc = false;
+
+        public LoadUserCfgResult(string rspData)
+        {
+
+        }
+
+        public bool IsSucc
+        {
+            get
+            {
+                return _isSucc;
+            }
+        }
+    }
 }

@@ -147,5 +147,17 @@ namespace ClientPreyer.Properties {
                 this["attListUrl"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("http://web.jingoal.com/mgt/workbench/v1/get_userconfig?code={0}&ouri={1}")]
+        public string userCfgUrl {
+            get {
+                return ((string)(this["userCfgUrl"]));
+            }
+            set {
+                this["userCfgUrl"] = value;
+            }
+        }
     }
 }

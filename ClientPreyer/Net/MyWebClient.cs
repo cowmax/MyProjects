@@ -57,9 +57,30 @@ namespace MyNetwork
             var response = r as HttpWebResponse;
             if (response != null)
             {
-                CookieCollection cookies = response.Cookies;
-                _cookieContainer.Add(cookies);
-                _responseCookies.Add(cookies);
+                foreach (Cookie cki in response.Cookies)
+                {
+                    // Check if this cookie is existed in _responseCookies collection
+                    bool found = false;
+                    foreach (Cookie rspCki in _responseCookies)
+                    {
+                        if (rspCki.Name.Equals(cki.Name, StringComparison.OrdinalIgnoreCase))
+                        {
+                            found = true;
+                            break;
+                        }
+                    }
+
+                    if (found) // Update existed cookie's value
+                    {
+                        _responseCookies[cki.Name].Value = cki.Value;
+                    }
+                    else
+                    {
+                        _responseCookies.Add(cki); // Add new cookie
+                    }
+                }
+
+                _cookieContainer.Add(_responseCookies);
             }
         }
 

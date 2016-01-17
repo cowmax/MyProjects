@@ -30,6 +30,7 @@ namespace ClientPreyer
         {
             if (mgr.isLogin)
             {
+                mgr.loadUserCfg();
                 mgr.loadAttendanceList();
 
             }
