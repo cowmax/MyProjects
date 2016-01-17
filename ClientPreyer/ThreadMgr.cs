@@ -38,12 +38,14 @@ namespace ClientPreyer
             // 设置 Cookies
             if (_wc.ResponseHeaders != null && _wc.ResponseHeaders.AllKeys.Contains("Set-Cookie"))
             {
-                _current_cookies = _wc.ResponseHeaders["Set-Cookie"];
-                if (_current_cookies != null)
-                {
-                    _wc.Headers.Add(HttpRequestHeader.Cookie, _current_cookies);
-                    LogHelper.info("getWebClient : _cookie - " + _current_cookies);
-                }
+                _wc.CookieContainer.Add(_wc.ResponseCookies);
+
+                //_current_cookies = _wc.ResponseHeaders["Set-Cookie"];
+                //if (_current_cookies != null)
+                //{
+                //    _wc.Headers.Add(HttpRequestHeader.Cookie, _current_cookies);
+                //    LogHelper.info("getWebClient : _cookie - " + _current_cookies);
+                //}
             }
 
             if (ccntr != null)
@@ -73,22 +75,35 @@ namespace ClientPreyer
 
             try
             {
-                CookieContainer cc = new CookieContainer();
-                string strCookies = "route=60cd899e37616d32b077390b1a32217d; apps=jmbmgtweb; JSESSIONID=FC0EDA9813B60450D02B040011F40638; bigDataUuid=e38b5fa4-e935-f7b3-f15f-7e5ef0fa4048; Hm_lvt_586f9b4035e5997f77635b13cc04984c=1452703716,1452869751; Hm_lpvt_586f9b4035e5997f77635b13cc04984c=1452869751; _ga=GA1.2.19950754.1452869751; _gat=1";
-                string[] cookies = strCookies.Split(';');
-                foreach(string c  in cookies)
-                {
-                    string[] ck = c.Split('=');
-                    if (ck.Length == 2)
-                    {
-                        Cookie cki = new Cookie(ck[0].Trim(), ck[1].Trim(), "/", ".jingoal.com");
-                        cc.Add(cki);
-                    }
-                }
-                MyWebClient wc = getWebClient(cc, refUrl);
+                MyWebClient wc = getWebClient();
 
-                // string rspData = wc.UploadString(trgUrl, postData);
-                string rspData = wc.DownloadString(trgUrl);
+                wc.Headers.Add("Accept", "*/*");
+                wc.Headers.Add("Accept-Encoding", "gzip, deflate");
+                wc.Headers.Add("Accept-Language", "zh-Hans-CN, zh-Hans; q=0.8, en-US; q=0.5, en; q=0.3");
+                wc.Headers.Add("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8");
+                wc.Headers.Add("Referer", "http://web.jingoal.com/attendance/attendance/web/index.jsp?locale=zh_CN&_t=1453001984042");
+                wc.Headers.Add("X-Requested-With", "XMLHttpRequest");
+
+                CookieCollection ckiColn = new CookieCollection();
+
+                ckiColn.Add(new Cookie("JSESSIONID", "8BF29417A6448590DC061EEBF3EF6B2A"));
+                ckiColn.Add(new Cookie("ouri", "http%3A%2F%2Fweb.jingoal.com%2F%23workbench"));
+                ckiColn.Add(new Cookie("_ga", "GA1.2.19950754.1452869751"));
+                ckiColn.Add(new Cookie("Hm_lvt_586f9b4035e5997f77635b13cc04984c", "1452703716"));
+                ckiColn.Add(new Cookie("Hm_lvt_586f9b4035e5997f77635b13cc04984c", "1452869751"));
+                ckiColn.Add(new Cookie("Hm_lvt_586f9b4035e5997f77635b13cc04984c", "1453003326"));
+                ckiColn.Add(new Cookie("Hm_lpvt_586f9b4035e5997f77635b13cc04984c", "1453004294"));
+                ckiColn.Add(new Cookie("code", "J9REAR"));
+                ckiColn.Add(new Cookie("JINSESSIONID", "ee5faeac-84a6-448f-9dd5-356b801c85f1"));
+                ckiColn.Add(new Cookie("cid", "4621068"));
+                ckiColn.Add(new Cookie("uid", "15965118"));
+                ckiColn.Add(new Cookie("showbanners", "true"));
+                ckiColn.Add(new Cookie("route", "602865b3d374a0c5cf9f73c9ebef0558"));
+                ckiColn.Add(new Cookie("TOURL", "http%3A%2F%2Fweb.jingoal.com%2Fmodule%2Fcalendar%2Fworkbench%2FgetMarkDays.do%3FcalendarId%3D0%26currMonth%3D2016%2F1%26b1453010055520%3D1"));
+
+                wc.CookieContainer.Add(new Uri("http://web.jingoal.com"), ckiColn);
+                string rspData = wc.UploadString(trgUrl, "");
+                //string rspData = wc.DownloadString(trgUrl);
 
                 LoadAttendanceResult rsl = new LoadAttendanceResult(rspData);
 
