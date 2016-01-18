@@ -34,7 +34,10 @@
       <Value Profile="(Default)">http://web.jingoal.com/attendance/attend/export/exportFile.do</Value>
     </Setting>
     <Setting Name="userCfgUrl" Type="System.String" Scope="User">
-      <Value Profile="(Default)">http://web.jingoal.com/mgt/workbench/v1/get_userconfig?code={0}&amp;ouri={1}</Value>
+      <Value Profile="(Default)">http://web.jingoal.com/mgt/workbench/v1/get_userconfig?code=hQM2nq&amp;ouri=http%3A%2F%2Fweb.jingoal.com%2F%23workbench&amp;b1453122378124=1</Value>
+    </Setting>
+    <Setting Name="userCfgRefUrl" Type="System.String" Scope="User">
+      <Value Profile="(Default)">http://web.jingoal.com/?code=hQM2nq&amp;state=%7Baccess_count:1%7D</Value>
     </Setting>
   </Settings>
 </SettingsFile>

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -73,10 +74,12 @@ namespace MyNetwork
                     if (found) // Update existed cookie's value
                     {
                         _responseCookies[cki.Name].Value = cki.Value;
+                        Debug.WriteLine("Update cookie {0}={1}", cki.Name, cki.Value);
                     }
                     else
                     {
                         _responseCookies.Add(cki); // Add new cookie
+                        Debug.WriteLine("Add new cookie {0}={1}", cki.Name, cki.Value);
                     }
                 }
 

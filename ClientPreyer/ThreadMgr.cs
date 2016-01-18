@@ -50,8 +50,8 @@ namespace ClientPreyer
 
         internal void loadUserCfg()
         {
-            string trgUrl = string.Format(_appSetting.userCfgUrl, "J9REAR", "http://web.jingoal.com/"); // code:J9REAR 是 企业代码
-            string refUrl = "http://web.jingoal.com/?code=J9REAR&state=%7Baccess_count:1%7D";
+            string trgUrl = _appSetting.userCfgUrl; 
+            string refUrl = _appSetting.userCfgRefUrl;
 
             MyWebClient wc = getWebClient(refUrl);
 
@@ -94,9 +94,12 @@ namespace ClientPreyer
                 wc.Headers.Add("Referer", "http://web.jingoal.com/attendance/attendance/web/index.jsp?locale=zh_CN&_t=1453001984042");
                 wc.Headers.Add("X-Requested-With", "XMLHttpRequest");
 
+                // Header 字段可能在发出请求报文后丢失，因此必须重新设置
+                setRequestHeaders(wc, refUrl);
+
                 CookieCollection ckiColn = new CookieCollection();
 
-                ckiColn.Add(new Cookie("JINSESSIONID", "ee5faeac-84a6-448f-9dd5-356b801c85f1"));
+                ckiColn.Add(new Cookie("JINSESSIONID", "e27b5e63-2ebd-40de-8f9c-79caf12402de"));
 
                 wc.CookieContainer.Add(new Uri("http://web.jingoal.com"), ckiColn);
                 string rspData = wc.UploadString(trgUrl, "");
