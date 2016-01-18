@@ -70,7 +70,8 @@ namespace ClientPreyer
             {
                 MyWebClient wc = createWebClient(null, refUrl);
 
-                string rspData = wc.UploadString(trgUrl, postData);
+                // string rspData = wc.UploadString(trgUrl, postData);
+                string rspData = wc.DownloadString(trgUrl);
                 LoadAttendanceResult rsl = new LoadAttendanceResult(rspData);
 
                 LogHelper.info(string.Format("Load attendance file list {0} .", rsl.fileCount));
@@ -80,7 +81,6 @@ namespace ClientPreyer
             {
                 LogHelper.error(wex.Message);
             }
-
         }
 
         private CookieContainer CurrentSessionCookies
@@ -98,19 +98,19 @@ namespace ClientPreyer
         }
 
         // Create a new WebClient object
-        public MyWebClient createWebClient(CookieContainer ccntr=null, string referer=null)
+        public MyWebClient createWebClient(CookieContainer ccntr=null, string refUrl=null)
         {
             MyWebClient wbclnt = new MyWebClient();
 
             // Header 字段可能在发出请求报文后丢失，因此必须重新设置
-            setRequestHeaders(wbclnt);
+            setRequestHeaders(wbclnt, refUrl);
 
             if (ccntr != null)
             {
                 wbclnt.CookieContainer = ccntr;
             }
 
-            if (referer != null) _referer = referer;
+            if (refUrl != null) _referer = refUrl;
 
             return wbclnt;
         }
@@ -269,84 +269,6 @@ namespace ClientPreyer
                 Debug.WriteLine(string.Format("[{0}, {1}, {2}]", userId, userName, realName));
             }
         }
-        #endregion abandoned code ...
-
-        public bool Login(string userName, string password)
-        {
-            string trgUrl = _appSetting.loginUrl;
-            string refUrl = _appSetting.refererUrl;
-            string postData = string.Format("login_type=default&username={0}&password={1}&identify=",
-                userName, password);
-
-            MyWebClient wc = createWebClient(null, refUrl);
-
-            string rspData = wc.UploadString(trgUrl, postData);
-
-            LoginResult rsl = new LoginResult(rspData);
-
-            this.isLogin = rsl.isLoginSucc();
-
-            return this.isLogin;
-        }
-
-        public int preyClientBaseInfo(int pid, int startIdx, int maxPageNum)
-        {
-            int cliCount = 0;
-            int total = 0;
-            WebClient wc = getWebClient();
-            string trgUrlTmpl = _appSetting.clientBaseUrl;
-            string trgUrl = string.Empty;
-            string rspData = string.Empty;
-            PhotographerAdapter adapter = new PhotographerAdapter();
-
-            for(int i = startIdx; i < maxPageNum; i++)
-            {
-                waitRandomTime();
-                trgUrl = string.Format(trgUrlTmpl, pid, i);
-
-                try
-                {
-                    rspData = wc.DownloadString(trgUrl);
-                    cliCount = parseAttendanceList(rspData);
-                    total += cliCount;
-
-                    adapter.setPageNum(pid, i);
-
-                    Debug.WriteLine("Parse potographer (id={0}) , page = {1},  records = {2} ", pid, i, cliCount);
-                    LogHelper.info(string.Format("Parse potographer (id={0}) , pageIndex = {1} with {2} clients.", pid, i, cliCount));
-
-                    if (isLastPage(rspData)) {
-                        Debug.WriteLine("Parse photographer (id={0}) {1} pages completed.", pid, i);
-                        break; // it has reached last page
-                    }
-                }
-                catch (WebException wex)
-                {
-                    Debug.WriteLine(string.Format("ERROR >> Parse potographer (id={0}) , pageIndex = {1} with Error {2}", pid, i, cliCount) + wex.Message);
-                    LogHelper.error(string.Format("Parse potographer (id={0}) , pageIndex = {1} with ERROR {2}", pid, i, wex.Message));
-                }
-
-            }
-
-            return total;
-        }
-
-        private bool isLastPage(string rspData)
-        {
-            int s = rspData.IndexOf("下一页", rspData.Length/2);
-            return (s < 0);
-        }
-
-        private void waitRandomTime()
-        {
-            int sec = int.Parse(_appSetting.intervalTime);
-            Random rdm = new Random(DateTime.Now.Millisecond);
-            int intvl = rdm.Next();
-            intvl = intvl % (sec*1000);
-            
-            Debug.WriteLine("Take a break {0} milliseconds", intvl);
-            Thread.Sleep(intvl);
-        }
 
         private int parseAttendanceList(string rspData)
         {
@@ -355,8 +277,8 @@ namespace ClientPreyer
                 + "(?<city>\\w+)</td>\\r\\s<td\\salign=\"center\">(?<location>\\w+)</td>\\r\\s<td\\salign=\"center\">"
                 + "(?<takeTime>[0-9\\-\\s\\:]+)</td>\\r\\s<td\\salign=\"center\">(?<activateTime>[0-9\\-\\s\\:]+)</td>"
                 + "\\r\\s<td\\salign=\"center\">(?<point>\\w*)</td>\\r\\s<td\\salign=\"center\">(<span\\sclass=\"red\">)*"
-                +"(?<status>\\w+)(</span>)*</td>\\r\\s<td\\salign=\"center\"><a\\shref=\"upload.php\\?act=edit&"
-                +"photographer_id=(?<ptgphrId>\\d+)&pu_id=(?<userId>\\d+)\">&nbsp;编辑</a></td>", 
+                + "(?<status>\\w+)(</span>)*</td>\\r\\s<td\\salign=\"center\"><a\\shref=\"upload.php\\?act=edit&"
+                + "photographer_id=(?<ptgphrId>\\d+)&pu_id=(?<userId>\\d+)\">&nbsp;编辑</a></td>",
                 RegexOptions.Compiled | RegexOptions.Multiline);
 
             MatchCollection mchz = rgx.Matches(rspData);
@@ -408,6 +330,86 @@ namespace ClientPreyer
 
             return bSucc;
 
+        }
+
+        public int preyClientBaseInfo(int pid, int startIdx, int maxPageNum)
+        {
+            int cliCount = 0;
+            int total = 0;
+            WebClient wc = getWebClient();
+            string trgUrlTmpl = _appSetting.clientBaseUrl;
+            string trgUrl = string.Empty;
+            string rspData = string.Empty;
+            PhotographerAdapter adapter = new PhotographerAdapter();
+
+            for (int i = startIdx; i < maxPageNum; i++)
+            {
+                waitRandomTime();
+                trgUrl = string.Format(trgUrlTmpl, pid, i);
+
+                try
+                {
+                    rspData = wc.DownloadString(trgUrl);
+                    cliCount = parseAttendanceList(rspData);
+                    total += cliCount;
+
+                    adapter.setPageNum(pid, i);
+
+                    Debug.WriteLine("Parse potographer (id={0}) , page = {1},  records = {2} ", pid, i, cliCount);
+                    LogHelper.info(string.Format("Parse potographer (id={0}) , pageIndex = {1} with {2} clients.", pid, i, cliCount));
+
+                    if (isLastPage(rspData))
+                    {
+                        Debug.WriteLine("Parse photographer (id={0}) {1} pages completed.", pid, i);
+                        break; // it has reached last page
+                    }
+                }
+                catch (WebException wex)
+                {
+                    Debug.WriteLine(string.Format("ERROR >> Parse potographer (id={0}) , pageIndex = {1} with Error {2}", pid, i, cliCount) + wex.Message);
+                    LogHelper.error(string.Format("Parse potographer (id={0}) , pageIndex = {1} with ERROR {2}", pid, i, wex.Message));
+                }
+
+            }
+
+            return total;
+        }
+
+        private bool isLastPage(string rspData)
+        {
+            int s = rspData.IndexOf("下一页", rspData.Length / 2);
+            return (s < 0);
+        }
+
+        #endregion abandoned code ...
+
+        public bool Login(string userName, string password)
+        {
+            string trgUrl = _appSetting.loginUrl;
+            string refUrl = _appSetting.refererUrl;
+            string postData = string.Format("login_type=default&username={0}&password={1}&identify=",
+                userName, password);
+
+            MyWebClient wc = createWebClient(null, refUrl);
+
+            string rspData = wc.UploadString(trgUrl, postData);
+
+            LoginResult rsl = new LoginResult(rspData);
+
+            this.isLogin = rsl.isLoginSucc();
+
+            return this.isLogin;
+        }
+
+        private void waitRandomTime()
+        {
+            int sec = int.Parse(_appSetting.intervalTime);
+            Random rdm = new Random(DateTime.Now.Millisecond);
+            int intvl = rdm.Next();
+            intvl = intvl % (sec*1000);
+            
+            Debug.WriteLine("Take a break {0} milliseconds", intvl);
+            Thread.Sleep(intvl);
         }
 
         internal int loadTask()
