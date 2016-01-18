@@ -15,28 +15,41 @@ namespace ClientPreyer.Net
     }
 
     [DataContract]
-    class LoginResult
+    class BaseResult
     {
-        [DataMember]
-        public string ok;
-
-        public LoginResult(string rspString)
-        {
-            LoginResult rsl = parse<LoginResult>(rspString);
-            this.ok = rsl.ok;
-        }
-
-        public static T parse<T>(string jsonString)
+        protected static T parse<T>(string jsonString)
         {
             using (var ms = new MemoryStream(Encoding.UTF8.GetBytes(jsonString)))
             {
                 return (T)new DataContractJsonSerializer(typeof(T)).ReadObject(ms);
             }
         }
+    }
+
+    [DataContract]
+    class LoginResult : BaseResult
+    {
+        [DataMember]
+        public string ok;
+        [DataMember]
+        public string error;
+        [DataMember]
+        public string username;
+        [DataMember]
+        public string showIdentifyCode;
+
+        public LoginResult(string rspString)
+        {
+            LoginResult rsl = parse<LoginResult>(rspString);
+            this.ok = rsl.ok;
+            this.error = rsl.error;
+            this.username = rsl.username;
+            this.showIdentifyCode = rsl.showIdentifyCode;
+        }
 
         public bool isLoginSucc()
         {
-            return (ok.Equals("true"));
+            return (ok !=null && ok.Equals("true"));
         }
     }
 
@@ -64,6 +77,24 @@ namespace ClientPreyer.Net
 
         public int fileCount {
             get { return atndList.Count(); }
+        }
+    }
+    // {"meta":{"code":401,"message":""}}
+    class LoadUserCfgResult : BaseResult
+    {
+        bool _isSucc = false;
+
+        public LoadUserCfgResult(string rspData)
+        {
+
+        }
+
+        public bool IsSucc
+        {
+            get
+            {
+                return _isSucc;
+            }
         }
     }
 }

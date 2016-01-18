@@ -102,7 +102,7 @@ namespace ClientPreyer.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("刘振诚@9968897")]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
         public string userName {
             get {
                 return ((string)(this["userName"]));
@@ -114,7 +114,7 @@ namespace ClientPreyer.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("7c222fb2927d828af22f592134e8932480637c0d")]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
         public string password {
             get {
                 return ((string)(this["password"]));
@@ -145,6 +145,18 @@ namespace ClientPreyer.Properties {
             }
             set {
                 this["attListUrl"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("http://web.jingoal.com/mgt/workbench/v1/get_userconfig?code={0}&ouri={1}")]
+        public string userCfgUrl {
+            get {
+                return ((string)(this["userCfgUrl"]));
+            }
+            set {
+                this["userCfgUrl"] = value;
             }
         }
     }
