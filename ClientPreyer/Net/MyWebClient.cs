@@ -20,6 +20,7 @@ namespace MyNetwork
             get { return _cookieContainer; }
             set { _cookieContainer = value; }
         }
+
         public CookieCollection ResponseCookies
         {
             get
@@ -27,6 +28,7 @@ namespace MyNetwork
                 return _responseCookies;
             }
         }
+
         /**
         WebClient uses HttpWebRequest under the covers.And HttpWebRequest supports gzip/deflate decompression. See HttpWebRequest AutomaticDecompression property
         However, WebClient class does not expose this property directly.So you will have to derive from it to set the property on the underlying HttpWebRequest.
@@ -42,6 +44,8 @@ namespace MyNetwork
         protected override WebResponse GetWebResponse(WebRequest request, IAsyncResult result)
         {
             WebResponse response = base.GetWebResponse(request, result);
+
+            // Save cookies from response
             saveCookies(response);
             return response;
         }
@@ -49,6 +53,8 @@ namespace MyNetwork
         protected override WebResponse GetWebResponse(WebRequest request)
         {
             WebResponse response = base.GetWebResponse(request);
+
+            // Save cookies from response
             saveCookies(response);
             return response;
         }
@@ -58,32 +64,7 @@ namespace MyNetwork
             var response = r as HttpWebResponse;
             if (response != null)
             {
-                foreach (Cookie cki in response.Cookies)
-                {
-                    // Check if this cookie is existed in _responseCookies collection
-                    bool found = false;
-                    foreach (Cookie rspCki in _responseCookies)
-                    {
-                        if (rspCki.Name.Equals(cki.Name, StringComparison.OrdinalIgnoreCase))
-                        {
-                            found = true;
-                            break;
-                        }
-                    }
-
-                    if (found) // Update existed cookie's value
-                    {
-                        _responseCookies[cki.Name].Value = cki.Value;
-                        Debug.WriteLine("Update cookie {0}={1}", cki.Name, cki.Value);
-                    }
-                    else
-                    {
-                        _responseCookies.Add(cki); // Add new cookie
-                        Debug.WriteLine("Add new cookie {0}={1}", cki.Name, cki.Value);
-                    }
-                }
-
-                _cookieContainer.Add(_responseCookies);
+                _responseCookies.Add(response.Cookies);
             }
         }
 
