@@ -56,6 +56,18 @@ namespace ClientPreyer
             return _wc;
         }
 
+        internal void generateFiles()
+        {
+            string trgUrl = "http://web.jingoal.com/attendance/attendance/v2/export/attend_export.do?deptId=-1&toTime=1453046400000&fromTime=1451577600000&exportTables=01000";
+            string refUrl = _appSetting.userCfgRefUrl;
+
+            MyWebClient wc = getWebClient("GET", refUrl);
+
+            string rspData = wc.DownloadString(trgUrl);
+
+            // LogHelper.info(string.Format("Load user config {0}", rsl.IsSucc ? "true" : "false"));
+        }
+
         private static void setPostRequestHeaders(MyWebClient wc, string refUrl)
         {
             wc.Headers.Clear();
