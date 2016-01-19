@@ -33,6 +33,10 @@ namespace ClientPreyer
                 mgr.loadUserCfg();
                 mgr.loadAttendanceList();
 
+                mgr.downloadAttFiles("AttData");
+
+                mgr.importAttDataToDB();
+
             }
         }
 

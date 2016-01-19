@@ -14,6 +14,7 @@ using Logging;
 using MeDataAdapters;
 using MyNetwork;
 using ClientPreyer.Net;
+using System.IO;
 
 namespace ClientPreyer
 {
@@ -21,6 +22,8 @@ namespace ClientPreyer
     {
         Properties.Settings _appSetting = new Properties.Settings();
         private List<int> _clientIdList = new List<int>();
+        private List<AttendanceFileInfo> _atndFiles = new List<AttendanceFileInfo>();
+
         private static string _referer;
         private MyWebClient _wc;
         public bool isLogin;
@@ -35,6 +38,44 @@ namespace ClientPreyer
             setRequestHeaders(_wc, _referer);
 
             return _wc;
+        }
+
+        internal void importAttDataToDB()
+        {
+            throw new NotImplementedException();
+        }
+
+        internal void downloadAttFiles(string folder)
+        {
+            string folderPath = getAttFolderPath(folder);
+            if (folderPath != null)
+            {
+                MyWebClient wc = getWebClient();
+                foreach(AttendanceFileInfo afi in _atndFiles)
+                {
+                    wc.DownloadFile(afi.downloadUrl, folderPath + afi.fileName);
+                }
+            }
+
+        }
+        
+        // 获取数据文件保存目录
+        private string getAttFolderPath(string folder)
+        {
+            string folderPath = null;
+
+            if (!Directory.Exists(folder))
+            {
+                DirectoryInfo di = Directory.CreateDirectory(folder);
+                folderPath = di.FullName;
+            }
+            else
+            {
+                DirectoryInfo di = new DirectoryInfo(folder);
+                folderPath = di.FullName;
+            }
+
+            return folderPath;
         }
 
         private static void setRequestHeaders(MyWebClient wc, string refUrl)
@@ -102,6 +143,7 @@ namespace ClientPreyer
                 string rspData = wc.UploadString(trgUrl, "");
 
                 LoadAttendanceResult rsl = new LoadAttendanceResult(rspData);
+                _atndFiles = rsl.AtndList;
 
                 LogHelper.info(string.Format("Load attendance file list {0} .", rsl.fileCount));
 

@@ -5,6 +5,7 @@ using System.Linq;
 using System.Runtime.Serialization;
 using System.Runtime.Serialization.Json;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace ClientPreyer.Net
@@ -68,15 +69,40 @@ namespace ClientPreyer.Net
 
     class LoadAttendanceResult
     {
-        List<AttendanceFileInfo> atndList;
+        List<AttendanceFileInfo> _atndList;
+
+        public List<AttendanceFileInfo> AtndList
+        {
+            get
+            {
+                return _atndList;
+            }
+        }
 
         public LoadAttendanceResult(string rspString)
         {
+            if (parseRspData(rspString) > 0)
+            {
+                
+            }
+        }
 
+        private int parseRspData(string rspString)
+        {
+            Regex re = new Regex("/module/resources/\\?rid=\\d+", RegexOptions.Compiled);
+            MatchCollection mchz = re.Matches(rspString);
+
+            foreach(Match mch in mchz)
+            {
+                AttendanceFileInfo afi = new AttendanceFileInfo();
+                afi.downloadUrl = mch.Value;
+            }
+
+            return mchz.Count;
         }
 
         public int fileCount {
-            get { return atndList.Count(); }
+            get { return _atndList.Count(); }
         }
     }
     // {"meta":{"code":401,"message":""}}
