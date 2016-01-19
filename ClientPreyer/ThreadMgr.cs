@@ -29,13 +29,32 @@ namespace ClientPreyer
         public bool isLogin;
 
         // Get the only instance of WebClient 
-        public MyWebClient getWebClient(string refUrl = null)
+        public MyWebClient getWebClient(string method="POST", string refUrl = null)
         {
-            if (_wc == null) _wc = new MyWebClient();
-            if (refUrl != null) _referer = refUrl;
+            if (_wc == null)
+            {
+                _wc = new MyWebClient();
+            }
+            else
+            {
+                foreach(Cookie cki in _wc.ResponseCookies)
+                {
+                    _wc.CookieContainer.Add(new Uri(refUrl), new Cookie(cki.Name, cki.Value));
+                }
+            }
+
+            if (refUrl != null)
+                _referer = refUrl;
 
             // 设置 Headers，发出请求报文后会丢失，因此必须重新设置
-            setRequestHeaders(_wc, _referer);
+            if (method.Equals("POST", StringComparison.CurrentCultureIgnoreCase))
+            {
+                setPostRequestHeaders(_wc, _referer);
+            }
+            else
+            {
+                setGetRequestHeaders(_wc, refUrl);
+            }
 
             return _wc;
         }
@@ -58,27 +77,20 @@ namespace ClientPreyer
             }
 
         }
-        
-        // 获取数据文件保存目录
-        private string getAttFolderPath(string folder)
-        {
-            string folderPath = null;
-
-            if (!Directory.Exists(folder))
-            {
-                DirectoryInfo di = Directory.CreateDirectory(folder);
-                folderPath = di.FullName;
-            }
-            else
-            {
-                DirectoryInfo di = new DirectoryInfo(folder);
-                folderPath = di.FullName;
-            }
-
-            return folderPath;
-        }
 
         private static void setRequestHeaders(MyWebClient wc, string refUrl)
+        {
+            string trgUrl = "http://web.jingoal.com/attendance/attendance/v2/export/attend_export.do?deptId=-1&toTime=1453046400000&fromTime=1451577600000&exportTables=01000";
+            string refUrl = _appSetting.userCfgRefUrl;
+
+            MyWebClient wc = getWebClient("GET", refUrl);
+
+            string rspData = wc.DownloadString(trgUrl);
+
+            // LogHelper.info(string.Format("Load user config {0}", rsl.IsSucc ? "true" : "false"));
+        }
+
+        private static void setPostRequestHeaders(MyWebClient wc, string refUrl)
         {
             wc.Headers.Clear();
             wc.Headers.Add(HttpRequestHeader.ContentType, "application/x-www-form-urlencoded");
@@ -89,25 +101,33 @@ namespace ClientPreyer
             wc.Encoding = new UTF8Encoding();
         }
 
+        private static void setGetRequestHeaders(MyWebClient wc, string refUrl)
+        {
+            wc.Headers.Clear();
+            wc.Headers.Add("Accept", "*/*");
+            wc.Headers.Add("Accept-Encoding", "gzip, deflate, sdch");
+            wc.Headers.Add("Accept-Language", "zh-CN,zh;q=0.8");
+            wc.Headers.Add("Cache-Control", "max-age=0");
+            wc.Headers.Add("Content-Type", "application/json");
+            wc.Headers.Add("Referer", refUrl);
+            wc.Encoding = new UTF8Encoding();
+        }
+
         internal void loadUserCfg()
         {
-            string trgUrl = string.Format(_appSetting.userCfgUrl, "J9REAR", "http://web.jingoal.com/"); // code:J9REAR 是 企业代码
-            string refUrl = "http://web.jingoal.com/?code=J9REAR&state=%7Baccess_count:1%7D";
+            string trgUrl = _appSetting.userCfgUrl; 
+            string refUrl = _appSetting.userCfgRefUrl;
 
-            MyWebClient wc = getWebClient(refUrl);
+            MyWebClient wc = getWebClient("GET", refUrl);
 
             CookieCollection ckiColn = new CookieCollection();
 
-            ckiColn.Add(new Cookie("Hm_lpvt_586f9b4035e5997f77635b13cc04984c", "1453004294"));
-            ckiColn.Add(new Cookie("Hm_lvt_586f9b4035e5997f77635b13cc04984c", "1452703716"));
-            ckiColn.Add(new Cookie("Hm_lvt_586f9b4035e5997f77635b13cc04984c", "1452869751"));
-            ckiColn.Add(new Cookie("Hm_lvt_586f9b4035e5997f77635b13cc04984c", "1453003326"));
-            ckiColn.Add(new Cookie("TOURL", "http%3A%2F%2Fweb.jingoal.com%2Fmodule%2Fcalendar%2Fworkbench%2FgetMarkDays.do%3FcalendarId%3D0%26currMonth%3D2016%2F1%26b1453004147530%3D1"));
-            ckiColn.Add(new Cookie("_ga", "GA1.2.19950754.1452869751"));
-            ckiColn.Add(new Cookie("_gat", "1"));
-            ckiColn.Add(new Cookie("code", "J9REAR"));
-            ckiColn.Add(new Cookie("flag", "login"));
-            ckiColn.Add(new Cookie("ouri", "http://web.jingoal.com/"));
+            ckiColn.Add(new Cookie("TOURL", "http%3A%2F%2Fweb.jingoal.com%2Fmodule%2Fcalendar%2Fworkbench%2FgetMarkDays.do%3FcalendarId%3D0%26currMonth%3D2016%2F1%26b1453122258578%3D1", "/"));
+            ckiColn.Add(new Cookie("_ga", "GA1.2.19950754.1452869751", "/"));
+            ckiColn.Add(new Cookie("_gat", "1", "/"));
+            ckiColn.Add(new Cookie("code", "hQM2nq", "/"));
+            ckiColn.Add(new Cookie("flag", "login", "/"));
+            ckiColn.Add(new Cookie("ouri", "http%3A%2F%2Fweb.jingoal.com%2F%23workbench", "/"));
 
             wc.CookieContainer.Add(new Uri("http://web.jingoal.com"), ckiColn);
 
@@ -126,18 +146,11 @@ namespace ClientPreyer
 
             try
             {
-                MyWebClient wc = getWebClient();
-
-                wc.Headers.Add("Accept", "*/*");
-                wc.Headers.Add("Accept-Encoding", "gzip, deflate");
-                wc.Headers.Add("Accept-Language", "zh-Hans-CN, zh-Hans; q=0.8, en-US; q=0.5, en; q=0.3");
-                wc.Headers.Add("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8");
-                wc.Headers.Add("Referer", "http://web.jingoal.com/attendance/attendance/web/index.jsp?locale=zh_CN&_t=1453001984042");
-                wc.Headers.Add("X-Requested-With", "XMLHttpRequest");
+                MyWebClient wc = getWebClient("post", refUrl);
 
                 CookieCollection ckiColn = new CookieCollection();
 
-                ckiColn.Add(new Cookie("JINSESSIONID", "ee5faeac-84a6-448f-9dd5-356b801c85f1"));
+                ckiColn.Add(new Cookie("JINSESSIONID", "e27b5e63-2ebd-40de-8f9c-79caf12402de"));
 
                 wc.CookieContainer.Add(new Uri("http://web.jingoal.com"), ckiColn);
                 string rspData = wc.UploadString(trgUrl, "");
@@ -175,7 +188,7 @@ namespace ClientPreyer
             MyWebClient wbclnt = new MyWebClient();
 
             // Header 字段可能在发出请求报文后丢失，因此必须重新设置
-            setRequestHeaders(wbclnt, refUrl);
+            setPostRequestHeaders(wbclnt, refUrl);
 
             if (ccntr != null)
             {
@@ -203,45 +216,9 @@ namespace ClientPreyer
             {
                 clidtlThread.start();
             }
-        }
-
-        internal int preyAllClientDetailInfo()
-        {
-            int total = 0;
-            ClientBaseInfoAdapter adapter = new ClientBaseInfoAdapter();
-
-            DataTable dt = adapter.getAllClientBaseInfo(true);
-            foreach(DataRow row in dt.Rows)
-            {
-                int uid = (int)row["userId"];
-                int pid = (int)row["PhotographerId"];
-                string userName = (string)row["userName"];
-                string realName = (string)row["realName"];
-
-                int count = 0;
-                WebClient wc = getWebClient();
-                string trgUrlTmpl = _appSetting.clientDetailUrl;
-                string trgUrl = string.Format(trgUrlTmpl, pid, uid);
-                string rspData = string.Empty;
-
-                waitRandomTime();
-                try
-                {
-                    rspData = wc.DownloadString(trgUrl);
-                    count = parseClientDetailInfo(pid, uid, rspData);
-                    Debug.WriteLine("Parse photographer (id={0}) , client = {1},{2}, succ={3}", pid, userName, realName, count);
                 }
-                catch(WebException wex)
-                {
-                    Debug.WriteLine("Parse photographer (id={0}) , client = {1},{2}, ERROR={3}", pid, userName, realName, wex.Message);
-                    LogHelper.error(string.Format("Parse photographer (id={0}) , client = {1},{2}, ERROR={3}", pid, userName, realName, wex.Message));
-                }
-                total += count;
 
 
-            }
-            return total;
-        }
 
         private int parseClientDetailInfo(int pid, int uid, string rspData)
         {
@@ -281,22 +258,6 @@ namespace ClientPreyer
             }
 
             return totalClient;
-        }
-
-        internal int preyPhotograpthers(int pageNum)
-        {
-            int count = 0;
-            MyWebClient wc = getWebClient();
-
-            string trgTmplUrl = _appSetting.allPhtgpherUrl;
-
-            for(int i=1; i <= pageNum; i++)
-            {
-                string rspData = wc.DownloadString(string.Format(trgTmplUrl, i.ToString()));
-                count += parsePhotographerInfo(rspData);
-            }
-
-            return count;
         }
 
         private int parsePhotographerInfo(string rspData)
@@ -348,7 +309,7 @@ namespace ClientPreyer
             string postData = string.Format("login_type=default&username={0}&password={1}&identify=", 
                 userName, password);
 
-            MyWebClient wc = getWebClient(refUrl);
+            MyWebClient wc = getWebClient("post", refUrl);
 
             string rspData = wc.UploadString(trgUrl, postData);
 

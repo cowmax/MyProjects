@@ -150,13 +150,26 @@ namespace ClientPreyer.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("http://web.jingoal.com/mgt/workbench/v1/get_userconfig?code={0}&ouri={1}")]
+        [global::System.Configuration.DefaultSettingValueAttribute("http://web.jingoal.com/mgt/workbench/v1/get_userconfig?code=hQM2nq&ouri=http%3A%2" +
+            "F%2Fweb.jingoal.com%2F%23workbench&b1453122378124=1")]
         public string userCfgUrl {
             get {
                 return ((string)(this["userCfgUrl"]));
             }
             set {
                 this["userCfgUrl"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("http://web.jingoal.com/?code=hQM2nq&state=%7Baccess_count:1%7D")]
+        public string userCfgRefUrl {
+            get {
+                return ((string)(this["userCfgRefUrl"]));
+            }
+            set {
+                this["userCfgRefUrl"] = value;
             }
         }
     }
