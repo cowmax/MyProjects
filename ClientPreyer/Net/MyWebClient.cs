@@ -59,12 +59,15 @@ namespace MyNetwork
             {
                 foreach (Cookie cki in _responseCookies)
                 {
-                    // determines the response-cookie is existed in cookie-collection
+                    // Determines the response-cookie is existed in cookie-collection
                     bool found = false;
                     foreach (Cookie c in ccln)
                     {
                         if (cki.Name == c.Name && compareDomain(cki.Domain, address.Host)==0)
                         {
+                            c.Value = cki.Value;
+                            c.Path = "/";
+                            c.Domain = address.Host;
                             found = true;
                             break;
                         }
@@ -77,9 +80,17 @@ namespace MyNetwork
                 }
             }
 
-            // add all cookies of same domain to cookie-container
+            // Add all cookies of same domain to cookie-container
             _cookieContainer = new CookieContainer();
             _cookieContainer.Add(address, ccln);
+#if DEBUG
+            Debug.WriteLine("======================================");
+            foreach(Cookie c in ccln)
+            {
+                Debug.WriteLine("{0}={1}, {2}, {3}", c.Name, c.Value, c.Path, c.Domain);
+            }
+            Debug.WriteLine("======================================");
+#endif
             return _cookieContainer;
         }
 
@@ -106,7 +117,6 @@ namespace MyNetwork
             var response = r as HttpWebResponse;
             if (response != null)
             {
-                
                 _responseCookies.Add(response.Cookies);
 
                 Debug.WriteLine("---------------------------------------------------");
@@ -118,8 +128,10 @@ namespace MyNetwork
                         if (c.Name == cki.Name && compareDomain(c.Domain, cki.Domain) == 0)
                         {
                             c.Value = cki.Value; // Update cookie's value
+                            c.Path = "/";
                             c.Domain = cki.Domain;
-                            c.Path = cki.Path;
+                            Debug.WriteLine("MyWebClient update cookies : {0}={1},{2},{3}", c.Name, c.Value, c.Path, c.Domain);
+
                             found = true;
                             break;
                         }
@@ -127,9 +139,10 @@ namespace MyNetwork
 
                     if (!found)
                     {
+                        cki.Path = "/";
                         _responseCookies.Add(cki); // Add new cookie
+                        Debug.WriteLine("MyWebClient add cookies : {0}={1},{2},{3}", cki.Name,  cki.Value, cki.Path, cki.Domain);
                     }
-                    Debug.WriteLine("MyWebClient save cookies : {0}={1},{2},{3}", cki.Name,  cki.Value, cki.Path, cki.Domain);
                 }
                 Debug.WriteLine("---------------------------------------------------");
             }
