@@ -123,4 +123,36 @@ namespace ClientPreyer.Net
             }
         }
     }
+
+    [DataContract]
+    class ResultMeta
+    {
+        [DataMember]
+        public string code;
+        [DataMember]
+        public string message;
+    }
+
+    [DataContract]
+    class GenerateAttFileResult : BaseResult
+    {
+        [DataMember]
+        ResultMeta meta;
+        [DataMember]
+        string data;
+
+        public bool IsSucc
+        {
+            get
+            {
+                return meta.code.Equals("0");
+            }
+        }
+        public GenerateAttFileResult(string rspString)
+        {
+            GenerateAttFileResult rsl = parse<GenerateAttFileResult>(rspString);
+            this.meta = rsl.meta;
+            this.data = rsl.data;
+        }
+    }
 }

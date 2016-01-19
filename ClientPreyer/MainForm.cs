@@ -31,13 +31,10 @@ namespace ClientPreyer
             if (mgr.isLogin)
             {
                 mgr.loadUserCfg();
-                mgr.generateFiles();
                 mgr.loadAttendanceList();
-
-                mgr.downloadAttFiles("AttData");
-
+                mgr.generateAttFile();
+                mgr.downloadAttFiles("AtndFiles");
                 mgr.importAttDataToDB();
-
             }
         }
 

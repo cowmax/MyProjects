@@ -29,18 +29,11 @@ namespace ClientPreyer
         public bool isLogin;
 
         // Get the only instance of WebClient 
-        public MyWebClient getWebClient(string method="POST", string refUrl = null)
+        public MyWebClient getWebClient(string method = "POST", string refUrl = null)
         {
             if (_wc == null)
             {
                 _wc = new MyWebClient();
-            }
-            else
-            {
-                foreach(Cookie cki in _wc.ResponseCookies)
-                {
-                    _wc.CookieContainer.Add(new Uri(refUrl), new Cookie(cki.Name, cki.Value));
-                }
             }
 
             if (refUrl != null)
@@ -59,35 +52,81 @@ namespace ClientPreyer
             return _wc;
         }
 
+        // 向服务器请求生成考勤数据文件
+        internal bool generateAttFile()
+        {
+            bool bSucc = false;
+            string refUrl = "http://web.jingoal.com/attendance/attendance/web/index.jsp?locale=zh_CN&_t=1453189807391";
+            string trgUrl = "http://web.jingoal.com/attendance/attendance/v2/export/attend_export.do?deptId=-1&toTime=1453046400000&fromTime=1451577600000&exportTables=11111";
+
+            try
+            {
+                MyWebClient wc = getWebClient("post", refUrl);
+
+                CookieCollection ckiColn = new CookieCollection();
+
+                ckiColn.Add(new Cookie("JINSESSIONID", "d98461f8-d0d8-4c1a-8fc7-1210a7d7c571"));
+
+                wc.addCookies(new Uri(trgUrl), ckiColn);
+
+#if DEBUG
+                string rspData = "{\"meta\":{\"code\":0,\"message\":\"\"},\"data\":null}";
+#else
+                string rspData = wc.DownloadString(trgUrl);
+#endif
+                GenerateAttFileResult rsl = new GenerateAttFileResult(rspData);
+
+                bSucc = rsl.IsSucc;
+            }
+            catch (WebException wex)
+            {
+                LogHelper.error(wex.Message);
+            }
+
+            return bSucc;
+        }
+
         internal void importAttDataToDB()
         {
-            throw new NotImplementedException();
+            
         }
 
         internal void downloadAttFiles(string folder)
         {
             string folderPath = getAttFolderPath(folder);
+            string refUrl = _appSetting.refererUrl;
             if (folderPath != null)
             {
-                MyWebClient wc = getWebClient();
-                foreach(AttendanceFileInfo afi in _atndFiles)
+                MyWebClient wc = getWebClient("POST", refUrl);
+
+                // 下载文件
+                if (_atndFiles != null)
                 {
-                    wc.DownloadFile(afi.downloadUrl, folderPath + afi.fileName);
+                    foreach (AttendanceFileInfo afi in _atndFiles)
+                    {
+                        wc.DownloadFile(afi.downloadUrl, folderPath + afi.fileName);
+                    }
                 }
             }
-
         }
 
-        private static void setRequestHeaders(MyWebClient wc, string refUrl)
+        // 获取数据文件保存目录
+        private string getAttFolderPath(string folder)
         {
-            string trgUrl = "http://web.jingoal.com/attendance/attendance/v2/export/attend_export.do?deptId=-1&toTime=1453046400000&fromTime=1451577600000&exportTables=01000";
-            string refUrl = _appSetting.userCfgRefUrl;
+            string folderPath = null;
 
-            MyWebClient wc = getWebClient("GET", refUrl);
+            if (!Directory.Exists(folder))
+            {
+                DirectoryInfo di = Directory.CreateDirectory(folder);
+                folderPath = di.FullName;
+            }
+            else
+            {
+                DirectoryInfo di = new DirectoryInfo(folder);
+                folderPath = di.FullName;
+            }
 
-            string rspData = wc.DownloadString(trgUrl);
-
-            // LogHelper.info(string.Format("Load user config {0}", rsl.IsSucc ? "true" : "false"));
+            return folderPath;
         }
 
         private static void setPostRequestHeaders(MyWebClient wc, string refUrl)
@@ -115,7 +154,7 @@ namespace ClientPreyer
 
         internal void loadUserCfg()
         {
-            string trgUrl = _appSetting.userCfgUrl; 
+            string trgUrl = _appSetting.userCfgUrl;
             string refUrl = _appSetting.userCfgRefUrl;
 
             MyWebClient wc = getWebClient("GET", refUrl);
@@ -129,7 +168,7 @@ namespace ClientPreyer
             ckiColn.Add(new Cookie("flag", "login", "/"));
             ckiColn.Add(new Cookie("ouri", "http%3A%2F%2Fweb.jingoal.com%2F%23workbench", "/"));
 
-            wc.CookieContainer.Add(new Uri("http://web.jingoal.com"), ckiColn);
+            wc.addCookies(new Uri(trgUrl), ckiColn);
 
             string rspData = wc.DownloadString(trgUrl);
 
@@ -150,22 +189,21 @@ namespace ClientPreyer
 
                 CookieCollection ckiColn = new CookieCollection();
 
-                ckiColn.Add(new Cookie("JINSESSIONID", "e27b5e63-2ebd-40de-8f9c-79caf12402de"));
+                ckiColn.Add(new Cookie("JINSESSIONID", "d98461f8-d0d8-4c1a-8fc7-1210a7d7c571"));
 
-                wc.CookieContainer.Add(new Uri("http://web.jingoal.com"), ckiColn);
+                wc.addCookies(new Uri(trgUrl), ckiColn);
                 string rspData = wc.UploadString(trgUrl, "");
 
                 LoadAttendanceResult rsl = new LoadAttendanceResult(rspData);
                 _atndFiles = rsl.AtndList;
 
-                LogHelper.info(string.Format("Load attendance file list {0} .", rsl.fileCount));
+                // LogHelper.info(string.Format("Load attendance file list {0} .", rsl.fileCount));
 
             }
             catch (WebException wex)
             {
                 LogHelper.error(wex.Message);
             }
-
         }
 
         private CookieContainer CurrentSessionCookies
@@ -177,13 +215,13 @@ namespace ClientPreyer
 
         private string Referer
         {
-            get{
+            get {
                 return _referer;
             }
         }
 
         // Create a new WebClient object
-        public static MyWebClient createWebClient(CookieContainer ccntr=null, string refUrl=null)
+        public static MyWebClient createWebClient(CookieContainer ccntr = null, string refUrl = null)
         {
             MyWebClient wbclnt = new MyWebClient();
 
@@ -192,14 +230,14 @@ namespace ClientPreyer
 
             if (ccntr != null)
             {
-                wbclnt.CookieContainer = ccntr;
+                wbclnt.addCookies(new Uri(refUrl), ccntr.GetCookies(new Uri(refUrl)));
             }
 
             return wbclnt;
         }
 
         ClientDetailThread clidtlThread = null;
-        #region abandoned code ...
+#region abandoned code ...
         internal void preyAllClientDetailInfoAsync()
         {
             if (clidtlThread == null)
@@ -216,9 +254,7 @@ namespace ClientPreyer
             {
                 clidtlThread.start();
             }
-                }
-
-
+        }
 
         private int parseClientDetailInfo(int pid, int uid, string rspData)
         {
@@ -300,7 +336,7 @@ namespace ClientPreyer
                 Debug.WriteLine(string.Format("[{0}, {1}, {2}]", userId, userName, realName));
             }
         }
-        #endregion abandoned code ...
+#endregion abandoned code ...
 
         public bool Login(string userName, string password)
         {

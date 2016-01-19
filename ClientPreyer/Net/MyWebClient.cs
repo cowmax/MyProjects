@@ -12,13 +12,18 @@ namespace MyNetwork
 {
     class MyWebClient : WebClient
     {
+        // Cookies used with send-request
         private CookieContainer _cookieContainer = new CookieContainer();
+
+        // Cookies saved from response
         private CookieCollection _responseCookies = new CookieCollection();
 
         public CookieContainer CookieContainer
         {
-            get { return _cookieContainer; }
-            set { _cookieContainer = value; }
+            get
+            {
+                return _cookieContainer;
+            }
         }
 
         public CookieCollection ResponseCookies
@@ -36,9 +41,46 @@ namespace MyNetwork
         protected override WebRequest GetWebRequest(Uri address)
         {
             HttpWebRequest request = base.GetWebRequest(address) as HttpWebRequest;
-            request.CookieContainer = _cookieContainer;
+            request.CookieContainer = getCookieContainer(address);
             request.AutomaticDecompression = DecompressionMethods.Deflate | DecompressionMethods.GZip;
             return request;
+        }
+
+        public void addCookies(Uri uri, CookieCollection ccln)
+        {
+            _cookieContainer.Add(uri, ccln);
+        }
+
+        private CookieContainer getCookieContainer(Uri address)
+        {
+            CookieCollection ccln = _cookieContainer.GetCookies(address);
+
+            if (_responseCookies.Count > 0)
+            {
+                foreach (Cookie cki in _responseCookies)
+                {
+                    // determines the response-cookie is existed in cookie-collection
+                    bool found = false;
+                    foreach (Cookie c in ccln)
+                    {
+                        if (cki.Name == c.Name && compareDomain(cki.Domain, address.Host)==0)
+                        {
+                            found = true;
+                            break;
+                        }
+                    }
+
+                    if (!found) // add cookie to collection, skipping existed cookies
+                    {
+                        ccln.Add(new Cookie(cki.Name, cki.Value, "/"));
+                    }
+                }
+            }
+
+            // add all cookies of same domain to cookie-container
+            _cookieContainer = new CookieContainer();
+            _cookieContainer.Add(address, ccln);
+            return _cookieContainer;
         }
 
         protected override WebResponse GetWebResponse(WebRequest request, IAsyncResult result)
@@ -64,8 +106,47 @@ namespace MyNetwork
             var response = r as HttpWebResponse;
             if (response != null)
             {
+                
                 _responseCookies.Add(response.Cookies);
+
+                Debug.WriteLine("---------------------------------------------------");
+                foreach(Cookie cki in response.Cookies)
+                {
+                    bool found = false;
+                    foreach(Cookie c in _responseCookies)
+                    {
+                        if (c.Name == cki.Name && compareDomain(c.Domain, cki.Domain) == 0)
+                        {
+                            c.Value = cki.Value; // Update cookie's value
+                            c.Domain = cki.Domain;
+                            c.Path = cki.Path;
+                            found = true;
+                            break;
+                        }
+                    }
+
+                    if (!found)
+                    {
+                        _responseCookies.Add(cki); // Add new cookie
+                    }
+                    Debug.WriteLine("MyWebClient save cookies : {0}={1},{2},{3}", cki.Name,  cki.Value, cki.Path, cki.Domain);
+                }
+                Debug.WriteLine("---------------------------------------------------");
             }
+        }
+
+        private int compareDomain(string d1, string d2)
+        {
+            int i = d1.IndexOf('.');
+            int j = d2.IndexOf('.');
+            int k = 1;
+            if (i == j)
+            {
+                d1 = d1.Substring(i);
+                d2 = d2.Substring(j);
+                k = (d1 == d2) ? 0 : 1;
+            }
+            return k;
         }
 
         public string UploadFileEx(string url, string uploadFile, NameValueCollection nameValues)
